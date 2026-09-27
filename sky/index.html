@@ -1,0 +1,244 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Sky Drone — Carbondale</title>
+<meta name="description" content="A Harmonic Field drone played by the live sky over Carbondale, Colorado.">
+<style>
+  :root{--ink:#eef2f5;--dim:#9fb0bd;--panel:rgba(10,16,24,.62);--line:rgba(255,255,255,.12);--accent:#f2c879}
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%;background:#05080d;color:var(--ink);font-family:ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif}
+  canvas{position:fixed;inset:0;width:100%;height:100%;display:block}
+  .ui{position:fixed;inset:auto 16px 16px 16px;max-width:460px;background:var(--panel);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border:1px solid var(--line);border-radius:14px;padding:16px 18px}
+  h1{font-size:18px;margin:0 0 2px;font-weight:600;letter-spacing:.01em}
+  .sub{color:var(--dim);font-size:13px;margin:0 0 12px;line-height:1.4}
+  .row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+  button{font:inherit;font-size:14px;color:#10141a;background:var(--accent);border:0;border-radius:999px;padding:9px 16px;cursor:pointer;font-weight:600}
+  button.ghost{background:transparent;color:var(--ink);border:1px solid var(--line);font-weight:500}
+  button:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+  .readout{display:grid;grid-template-columns:repeat(3,1fr);gap:6px 12px;margin:12px 0 4px;font-size:12px;color:var(--dim)}
+  .readout b{display:block;color:var(--ink);font-size:14px;font-weight:600;font-variant-numeric:tabular-nums}
+  .map{font-size:12px;color:var(--dim);margin:8px 0 0;line-height:1.5}
+  details{margin-top:10px;font-size:13px}
+  summary{cursor:pointer;color:var(--ink)}
+  label{display:grid;grid-template-columns:92px 1fr 44px;gap:8px;align-items:center;margin:8px 0;color:var(--dim);font-size:12px}
+  input[type=range]{width:100%;accent-color:var(--accent)}
+  .src{font-size:11px;color:var(--dim);margin-top:10px}
+  .src a{color:var(--dim)}
+  .status{font-size:12px;color:var(--accent);min-height:1em;margin-top:6px}
+  @media (max-width:520px){.ui{inset:auto 8px 8px 8px;padding:14px}.readout{grid-template-columns:repeat(2,1fr)}}
+</style>
+</head>
+<body>
+<canvas id="sky" aria-hidden="true"></canvas>
+<section class="ui" aria-label="Sky Drone controls">
+  <h1>Sky Drone · Carbondale, CO</h1>
+  <p class="sub">A Harmonic Field drone played by the real sky. Air pressure bends the root, wind sets the pulse, clouds darken the tone, and evening slowly lowers everything.</p>
+  <div class="row">
+    <button id="play">Play the sky</button>
+    <button id="quiet" class="ghost" aria-pressed="false">Quiet mode</button>
+    <button id="stop" class="ghost">Stop</button>
+  </div>
+  <div class="readout" id="readout" aria-live="polite"></div>
+  <p class="map" id="map"></p>
+  <details id="manual">
+    <summary>Manual weather (fallback / play with it)</summary>
+    <label>Pressure hPa<input id="m_p" type="range" min="790" max="840" step="0.5"><span id="v_p"></span></label>
+    <label>Wind km/h<input id="m_w" type="range" min="0" max="60" step="1"><span id="v_w"></span></label>
+    <label>Clouds %<input id="m_c" type="range" min="0" max="100" step="1"><span id="v_c"></span></label>
+    <label>Temp °C<input id="m_t" type="range" min="-25" max="38" step="0.5"><span id="v_t"></span></label>
+    <label>Humidity %<input id="m_h" type="range" min="0" max="100" step="1"><span id="v_h"></span></label>
+    <label>Rain mm<input id="m_r" type="range" min="0" max="5" step="0.1"><span id="v_r"></span></label>
+    <div class="row"><button id="live" class="ghost">Back to live sky</button></div>
+  </details>
+  <div class="status" id="status"></div>
+  <p class="src">Weather: <a href="https://open-meteo.com/" target="_blank" rel="noopener">Open-Meteo</a> forecast API (CC BY 4.0), 39.40°N 107.21°W, refreshed every 15 min. Part of <a href="../">Harmonic Field</a>. Made in the Idea Lab by Perplexity, for Ananda.</p>
+</section>
+<script>
+(() => {
+  const LAT=39.4022, LON=-107.2112;
+  const API=`https://api.open-meteo.com/v1/forecast?latitude=${LAT}&longitude=${LON}&current=temperature_2m,relative_humidity_2m,surface_pressure,wind_speed_10m,wind_direction_10m,cloud_cover,precipitation,is_day&daily=sunrise,sunset&timezone=America%2FDenver&forecast_days=1`;
+  // Quiet default preset: a calm, clear evening. Used if the feed fails.
+  const DEFAULT={p:812,w:6,c:20,t:10,h:45,r:0,dir:180,day:0.5,time:null,source:'default'};
+  let wx={...DEFAULT}, live=true, quiet=false;
+  const $=id=>document.getElementById(id);
+  const clamp=(v,a,b)=>Math.min(b,Math.max(a,v)), lerp=(a,b,t)=>a+(b-a)*t;
+  const norm=(v,a,b)=>clamp((v-a)/(b-a),0,1);
+
+  // daylight 0 (night) .. 1 (midday), with smooth dusk
+  function daylight(now,sunrise,sunset){
+    if(!sunrise||!sunset) return 0.5;
+    const t=now.getTime(), sr=sunrise.getTime(), ss=sunset.getTime(), fade=75*60e3;
+    if(t<sr-fade||t>ss+fade) return 0;
+    if(t<sr+fade) return norm(t,sr-fade,sr+fade);
+    if(t>ss-fade) return 1-norm(t,ss-fade,ss+fade);
+    return 1;
+  }
+
+  async function fetchSky(){
+    try{
+      const r=await fetch(API,{cache:'no-store'});
+      if(!r.ok) throw new Error('HTTP '+r.status);
+      const j=await r.json(), c=j.current;
+      const sr=new Date(j.daily.sunrise[0]), ss=new Date(j.daily.sunset[0]);
+      const next={p:c.surface_pressure,w:c.wind_speed_10m,c:c.cloud_cover,t:c.temperature_2m,h:c.relative_humidity_2m,r:c.precipitation,dir:c.wind_direction_10m,day:daylight(new Date(),sr,ss),time:c.time,source:'live',sr,ss};
+      if(live){wx=next;syncSliders();}
+      status('');
+    }catch(e){
+      if(live && wx.source!=='live'){wx={...DEFAULT};syncSliders();}
+      status('Live sky unavailable — playing the quiet default. Use Manual weather to shape it.');
+    }
+    render();
+  }
+  const status=s=>$('status').textContent=s;
+
+  // ---- mapping weather -> sound ----
+  function params(){
+    const base=108; // A=432 family, down two octaves
+    const cents=lerp(-40,40,norm(wx.p,795,830));            // pressure bends root
+    const dusk=lerp(-120,0,wx.day);                          // evening lowers ~1 semitone
+    const root=base*Math.pow(2,(cents+dusk)/1200);
+    const pulse=lerp(0.4,7,Math.pow(norm(wx.w,0,50),0.8));  // wind -> pulse Hz
+    const depth=quiet?0.05:lerp(0.08,0.45,norm(wx.w,0,50));
+    const cutoff=lerp(2600,380,norm(wx.c,0,100))*lerp(0.7,1,wx.day); // clouds darken
+    const beat=lerp(0.15,2.2,norm(wx.t,-20,35));             // warmth widens beating
+    const space=lerp(0.15,0.7,norm(wx.h,0,100));             // humidity -> reverb
+    const rain=norm(wx.r,0,3);
+    const level=(quiet?0.12:0.28)*lerp(0.75,1,wx.day);
+    return {root,cents:cents+dusk,pulse,depth,cutoff,beat,space,rain,level};
+  }
+
+  // ---- audio ----
+  let ctx=null, nodes=null;
+  const RATIOS=[1,3/2,2,5/2,3,4]; // just-intonation stack
+  const GAINS=[1,.55,.5,.28,.22,.12];
+  function impulse(ctx,sec){
+    const len=ctx.sampleRate*sec, b=ctx.createBuffer(2,len,ctx.sampleRate);
+    for(let ch=0;ch<2;ch++){const d=b.getChannelData(ch);for(let i=0;i<len;i++)d[i]=(Math.random()*2-1)*Math.pow(1-i/len,2.4);}
+    return b;
+  }
+  function start(){
+    if(!ctx) ctx=new (window.AudioContext||window.webkitAudioContext)();
+    if(ctx.state==='suspended') ctx.resume();
+    if(nodes) return;
+    const P=params(), t=ctx.currentTime;
+    const master=ctx.createGain(); master.gain.setValueAtTime(0,t); master.gain.linearRampToValueAtTime(P.level,t+4);
+    const comp=ctx.createDynamicsCompressor(); comp.threshold.value=-18; comp.ratio.value=3;
+    const filter=ctx.createBiquadFilter(); filter.type='lowpass'; filter.Q.value=0.9; filter.frequency.value=P.cutoff;
+    const trem=ctx.createGain(); trem.gain.value=1;
+    const lfo=ctx.createOscillator(); lfo.type='sine'; lfo.frequency.value=P.pulse;
+    const lfoAmt=ctx.createGain(); lfoAmt.gain.value=P.depth; lfo.connect(lfoAmt).connect(trem.gain);
+    const dry=ctx.createGain(), wet=ctx.createGain(), verb=ctx.createConvolver(); verb.buffer=impulse(ctx,5);
+    dry.gain.value=1-P.space*0.6; wet.gain.value=P.space;
+    const oscs=[];
+    RATIOS.forEach((r,i)=>{
+      [-1,1].forEach(side=>{
+        const o=ctx.createOscillator(); o.type=i<2?'sawtooth':'sine';
+        o.frequency.value=P.root*r+side*P.beat*0.5*(i+1)/2;
+        const g=ctx.createGain(); g.gain.value=GAINS[i]*0.16;
+        const pan=ctx.createStereoPanner?ctx.createStereoPanner():null;
+        if(pan){pan.pan.value=side*0.35;o.connect(g).connect(pan).connect(filter);} else o.connect(g).connect(filter);
+        o.start(t); oscs.push({o,r,side,i});
+      });
+    });
+    // rain: filtered noise, gated in little drops
+    const nb=ctx.createBuffer(1,ctx.sampleRate*2,ctx.sampleRate), nd=nb.getChannelData(0);
+    for(let i=0;i<nd.length;i++) nd[i]=Math.random()*2-1;
+    const noise=ctx.createBufferSource(); noise.buffer=nb; noise.loop=true;
+    const nf=ctx.createBiquadFilter(); nf.type='bandpass'; nf.frequency.value=3200; nf.Q.value=1.2;
+    const ng=ctx.createGain(); ng.gain.value=0; noise.connect(nf).connect(ng).connect(wet); noise.start(t);
+    filter.connect(trem); trem.connect(dry); trem.connect(verb); verb.connect(wet);
+    dry.connect(master); wet.connect(master); master.connect(comp).connect(ctx.destination);
+    lfo.start(t);
+    nodes={master,filter,lfo,lfoAmt,dry,wet,oscs,ng};
+    dropLoop();
+  }
+  function dropLoop(){
+    if(!nodes) return;
+    const P=params();
+    if(P.rain>0.02 && !quiet){
+      const t=ctx.currentTime, g=nodes.ng.gain;
+      g.cancelScheduledValues(t); g.setValueAtTime(0,t); g.linearRampToValueAtTime(0.05*P.rain,t+0.005); g.exponentialRampToValueAtTime(0.0001,t+0.12);
+    }
+    setTimeout(dropLoop, 80+Math.random()*lerp(900,120,P.rain));
+  }
+  function update(){
+    if(!nodes||!ctx) return;
+    const P=params(), t=ctx.currentTime, glide=3;
+    nodes.filter.frequency.setTargetAtTime(P.cutoff,t,glide);
+    nodes.lfo.frequency.setTargetAtTime(P.pulse,t,glide);
+    nodes.lfoAmt.gain.setTargetAtTime(P.depth,t,glide);
+    nodes.dry.gain.setTargetAtTime(1-P.space*0.6,t,glide);
+    nodes.wet.gain.setTargetAtTime(P.space,t,glide);
+    nodes.master.gain.setTargetAtTime(P.level,t,glide);
+    nodes.oscs.forEach(({o,r,side,i})=>o.frequency.setTargetAtTime(P.root*r+side*P.beat*0.5*(i+1)/2,t,glide*2));
+  }
+  function stop(){
+    if(!nodes) return;
+    const n=nodes, t=ctx.currentTime; nodes=null;
+    n.master.gain.cancelScheduledValues(t); n.master.gain.setTargetAtTime(0,t,0.8);
+    setTimeout(()=>{try{n.oscs.forEach(x=>x.o.stop());n.lfo.stop();}catch(e){}},4000);
+  }
+  // recover from tab suspension
+  document.addEventListener('visibilitychange',()=>{if(!document.hidden&&ctx&&nodes&&ctx.state!=='running')ctx.resume();});
+
+  // ---- UI ----
+  const sliders={p:'m_p',w:'m_w',c:'m_c',t:'m_t',h:'m_h',r:'m_r'};
+  function syncSliders(){for(const k in sliders){$(sliders[k]).value=wx[k];$('v_'+sliders[k].slice(2)).textContent=(+wx[k]).toFixed(k==='p'?1:0);}}
+  for(const k in sliders){$(sliders[k]).addEventListener('input',e=>{live=false;wx={...wx,[k]:+e.target.value,source:'manual'};$('v_'+sliders[k].slice(2)).textContent=(+e.target.value).toFixed(k==='p'?1:0);render();});}
+  $('live').onclick=()=>{live=true;fetchSky();};
+  $('play').onclick=()=>{start();update();};
+  $('stop').onclick=stop;
+  $('quiet').onclick=e=>{quiet=!quiet;e.target.setAttribute('aria-pressed',quiet);e.target.textContent=quiet?'Quiet mode: on':'Quiet mode';render();};
+
+  function render(){
+    const P=params();
+    const when=wx.time?new Date(wx.time).toLocaleTimeString([], {hour:'numeric',minute:'2-digit'}):'—';
+    const src={live:'Live sky · '+when,manual:'Manual weather',default:'Quiet default'}[wx.source];
+    $('readout').innerHTML=
+      `<div>Pressure<b>${(+wx.p).toFixed(1)} hPa</b></div><div>Wind<b>${(+wx.w).toFixed(0)} km/h</b></div><div>Clouds<b>${(+wx.c).toFixed(0)}%</b></div>`+
+      `<div>Temp<b>${(+wx.t).toFixed(1)}°C</b></div><div>Humidity<b>${(+wx.h).toFixed(0)}%</b></div><div>Source<b style="font-size:12px">${src}</b></div>`;
+    $('map').textContent=`Root ${P.root.toFixed(2)} Hz (${P.cents>=0?'+':''}${P.cents.toFixed(0)}¢ from 108) · pulse ${P.pulse.toFixed(2)} Hz · tone ${Math.round(P.cutoff)} Hz · beating ${P.beat.toFixed(2)} Hz · space ${Math.round(P.space*100)}%`;
+    update();
+  }
+
+  // ---- visuals ----
+  const cv=$('sky'), g=cv.getContext('2d');
+  let W,H,parts=[];
+  function resize(){W=cv.width=innerWidth*devicePixelRatio;H=cv.height=innerHeight*devicePixelRatio;parts=Array.from({length:140},()=>({x:Math.random()*W,y:Math.random()*H,z:Math.random()}));}
+  addEventListener('resize',resize); resize();
+  const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
+  let last=performance.now(), phase=0;
+  function frame(now){
+    const dt=Math.min(0.05,(now-last)/1000); last=now;
+    const P=params(); phase+=dt*P.pulse*Math.PI*2;
+    const d=wx.day, cl=norm(wx.c,0,100);
+    const top=`hsl(${lerp(232,208,d)} ${lerp(45,55,d)*(1-cl*0.7)}% ${lerp(5,42,d)*(1-cl*0.35)}%)`;
+    const bot=`hsl(${lerp(260,32,d*0.6+0.2)} ${lerp(30,70,1-cl)*lerp(0.6,1,d)}% ${lerp(12,62,d)*(1-cl*0.3)}%)`;
+    const grd=g.createLinearGradient(0,0,0,H); grd.addColorStop(0,top); grd.addColorStop(1,bot);
+    g.fillStyle=grd; g.fillRect(0,0,W,H);
+    // pulsing glow at the horizon
+    const pulse=0.5+0.5*Math.sin(phase), rad=Math.min(W,H)*lerp(0.35,0.55,pulse*P.depth*2);
+    const glow=g.createRadialGradient(W/2,H*0.78,0,W/2,H*0.78,rad);
+    glow.addColorStop(0,`rgba(242,200,121,${0.10+0.18*pulse*(1-cl*0.6)})`); glow.addColorStop(1,'rgba(242,200,121,0)');
+    g.fillStyle=glow; g.fillRect(0,0,W,H);
+    // wind particles / stars
+    const wind=(reduce?0.1:1)*lerp(4,160,norm(wx.w,0,50))*devicePixelRatio, ang=((wx.dir||180)+180)*Math.PI/180;
+    const vx=Math.sin(ang)*wind, vy=-Math.cos(ang)*wind*0.25;
+    for(const p of parts){
+      p.x+=vx*dt*(0.4+p.z); p.y+=vy*dt*(0.4+p.z)+(wx.r>0.05?220*dt*p.z*devicePixelRatio:0);
+      if(p.x<0)p.x+=W; if(p.x>W)p.x-=W; if(p.y<0)p.y+=H; if(p.y>H)p.y-=H;
+      g.fillStyle=`rgba(255,255,255,${(0.08+0.35*p.z)*lerp(1,0.35,d)*(1-cl*0.5)})`;
+      g.fillRect(p.x,p.y,1.4*devicePixelRatio*(0.5+p.z),1.4*devicePixelRatio*(0.5+p.z));
+    }
+    // cloud veil
+    if(cl>0.02){g.fillStyle=`rgba(180,190,205,${cl*0.22})`;g.fillRect(0,0,W,H);}
+    requestAnimationFrame(frame);
+  }
+  syncSliders(); render(); fetchSky(); setInterval(()=>{if(live)fetchSky();},15*60e3);
+  requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>
