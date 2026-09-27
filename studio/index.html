@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Harmonic Field</title>
+<title>Harmonic Field Studio</title>
 <meta name="description" content="A generative drone built on the harmonic series, with morphing controls and a linked cymatic visualizer.">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%230b0b14'/%3E%3Ccircle cx='16' cy='16' r='10' fill='none' stroke='%23e8a85c' stroke-width='2'/%3E%3Ccircle cx='16' cy='16' r='5' fill='none' stroke='%23e8a85c' stroke-width='1.5'/%3E%3Ccircle cx='16' cy='16' r='1.6' fill='%23e8a85c'/%3E%3C/svg%3E">
 <style>
@@ -310,54 +310,16 @@ body.proj-view { cursor: none; }
 body.proj-view .gate, body.proj-view .panel, body.proj-view .show-btn, body.proj-view .wizard { display: none !important; }
 
 </style>
-<style>
-/* Harmonic Field — simple / installation dock */
-.dock { position: fixed; left: 50%; bottom: max(16px, env(safe-area-inset-bottom)); transform: translateX(-50%); z-index: 4;
-  width: min(980px, calc(100vw - 24px)); padding: 14px; border-radius: 20px; background: var(--glass);
-  backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px); border: 1px solid var(--line); transition: opacity .9s, transform .9s; }
-body.idle .dock { opacity: 0; transform: translate(-50%, 16px); pointer-events: none; }
-body.idle { cursor: none; }
-.sbtns { display: grid; grid-template-columns: repeat(8, 1fr); gap: 8px; }
-.sbtn { position: relative; min-height: 86px; border-radius: 14px; border: 1px solid var(--line); background: rgba(255,255,255,.02);
-  display: flex; flex-direction: column; justify-content: flex-end; align-items: flex-start; padding: 10px; text-align: left;
-  transition: border-color .25s, background .25s, transform .08s; touch-action: manipulation; }
-.sbtn:active { transform: scale(.97); }
-.sbtn .sw { position: absolute; top: 10px; left: 10px; width: 16px; height: 16px; border-radius: 50%; }
-.sbtn .pled { position: absolute; top: 14px; left: 12px; width: 8px; height: 8px; border-radius: 50%; background: var(--line-2); }
-.sbtn .sk { position: absolute; top: 8px; right: 10px; font-family: var(--font-mono); font-size: 10px; color: var(--faint); }
-.sbtn .sn { font-weight: 700; font-size: 14px; line-height: 1.15; }
-.sbtn .ss { font-size: 11.5px; color: var(--muted); margin-top: 3px; line-height: 1.2; }
-.sbtn.lit { border-color: var(--accent); background: var(--accent-soft); }
-.sbtn.lit .pled { background: var(--accent); box-shadow: 0 0 8px var(--accent); }
-.sbtn.hit { animation: shit .5s ease-out; }
-@keyframes shit { from { box-shadow: 0 0 0 0 rgba(232,168,92,.55); } to { box-shadow: 0 0 0 12px rgba(232,168,92,0); } }
-.sknobs { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; margin-top: 14px; }
-.sknob { display: grid; grid-template-columns: 64px 1fr 72px; align-items: center; gap: 10px; }
-.sknob .val { text-align: right; font-family: var(--font-mono); font-size: 12px; color: var(--muted); }
-.sknob input[type=range] { width: 100%; }
-.dock-hint { margin-top: 10px; font-size: 11.5px; color: var(--faint); text-align: center; }
-.toast { position: fixed; top: max(18px, env(safe-area-inset-top)); left: 50%; transform: translate(-50%, -8px); z-index: 7; padding: 8px 16px;
-  border-radius: 999px; background: rgba(14,14,24,.7); border: 1px solid var(--line); color: var(--text); font-size: 13px;
-  opacity: 0; transition: opacity .4s, transform .4s; pointer-events: none; backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); }
-.toast.on { opacity: 1; transform: translate(-50%, 0); }
-@media (max-width: 820px) {
-  .sbtns { grid-template-columns: repeat(4, 1fr); }
-  .sbtn { min-height: 72px; padding: 9px; }
-  .sbtn .sn { font-size: 13px; }
-  .sknobs { grid-template-columns: 1fr; gap: 10px; }
-  .sknob { grid-template-columns: 58px 1fr 64px; }
-}
-
-</style>
 <script>document.documentElement.classList.add('js');
 window.addEventListener('error',function(e){var n=document.getElementById('hf-err');if(n){n.hidden=false;n.textContent='Something went wrong starting Harmonic Field: '+(e.message||e);}});</script>
 </head>
-<body class="simple">
+<body>
 <canvas id="field" aria-label="Visualizer reacting to the sound"></canvas>
 
+<!-- Start overlay (audio needs a user gesture) -->
 <section id="gate" class="gate">
   <div class="gate-inner">
-    <svg class="mark mark-lg" viewBox="0 0 48 48" fill="none" aria-hidden="true">
+    <svg class="mark mark-lg" viewBox="0 0 48 48" fill="none" aria-label="Harmonic Field mark">
       <circle cx="24" cy="24" r="21" stroke="currentColor" stroke-width="1.5"/>
       <circle cx="24" cy="24" r="10.5" stroke="currentColor" stroke-width="1.5"/>
       <circle cx="24" cy="24" r="7" stroke="currentColor" stroke-width="1" opacity=".55"/>
@@ -365,25 +327,230 @@ window.addEventListener('error',function(e){var n=document.getElementById('hf-er
       <circle cx="24" cy="24" r="2" fill="currentColor"/>
     </svg>
     <h1>Harmonic Field</h1>
-    <p>One low note and its natural overtones, slowly breathing. Choose a mood, close your eyes, and let the sound hold you for a while.</p>
+    <p>A generative drone built from one root and its natural overtones. Scenes morph the sound; the field shows what you hear.</p>
     <button id="begin" class="btn-primary">Begin</button>
     <p id="hf-nojs" class="hf-note">You're looking at a preview, so Begin won't work here. Open this page in Safari or Chrome.</p>
     <p id="hf-err" class="hf-note" hidden></p>
-    <p class="gate-hint">Best with headphones or a good speaker. Turn your volume up.<br>Made by Matthew</p>
+    <p class="gate-hint">Headphones or a real sub recommended — the fundamental sits at 55 Hz.<br>For a MIDI controller, open this in Chrome or Edge on a computer.</p>
   </div>
 </section>
 
-<div id="dock" class="dock" hidden>
-  <div class="sbtns" id="sbtns"></div>
-  <div class="sknobs">
-    <label class="sknob"><span class="label">Volume</span><input id="vol" type="range" min="0" max="100" value="80" aria-label="Volume"><span class="val" id="vol-v">80</span></label>
-    <label class="sknob"><span class="label">Tone</span><input id="tone" type="range" min="0" max="100" value="50" aria-label="Tone, darker to brighter"><span class="val" id="tone-v">balanced</span></label>
+<!-- Control panel -->
+<aside id="panel" class="panel" aria-label="Controls" hidden>
+  <header class="panel-head">
+    <div class="brand">
+      <svg class="mark" viewBox="0 0 48 48" fill="none" aria-hidden="true">
+        <circle cx="24" cy="24" r="21" stroke="currentColor" stroke-width="2.5"/>
+        <circle cx="24" cy="24" r="10.5" stroke="currentColor" stroke-width="2.5"/>
+        <circle cx="24" cy="24" r="3" fill="currentColor"/>
+      </svg>
+      <div>
+        <div class="brand-name">Harmonic Field</div>
+        <div class="readout"><span id="rd-scene">Ground</span> · <span id="rd-root">55.00</span> Hz · <span id="rd-pulse">θ 6.11 Hz</span></div>
+      </div>
+    </div>
+    <div class="head-right">
+      <div class="out-meter" title="Output signal — if this moves but you hear nothing, check your speaker / Bluetooth output"><div id="out-fill"></div></div>
+      <button class="icon-btn" id="hide" title="Hide controls (H)" aria-label="Hide controls">
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="5" width="18" height="14" rx="3"/><path d="M15 5v14"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <div id="audio-alert" class="audio-alert" hidden role="alert">
+    <span>Audio is paused by the browser or device.</span>
+    <div class="aa-btns"><button class="chip on-accent" id="aa-resume">Resume</button><button class="chip" id="aa-restart">Restart audio</button></div>
   </div>
-  <div class="dock-hint">Controls fade away after a few seconds. Tap to bring them back.</div>
+
+  <div class="section">
+    <div class="label-row"><span class="label">Pads</span><span class="label dim" id="pad-hint">hold ⇧ for more</span></div>
+    <div class="padgrid" id="padgrid"></div>
+    <div class="morph-track"><div id="morph-bar" class="morph-bar"></div></div>
+    <div class="scene-note" id="scene-note"></div>
+  </div>
+
+  <div class="section">
+    <div class="label-row"><span class="label">Knobs</span><span class="label dim">drag · scroll · double-click resets</span></div>
+    <div class="knobs" id="knobs"></div>
+  </div>
+
+  <nav class="tabs" role="tablist">
+    <button role="tab" aria-selected="true" data-tab="field">Field</button>
+    <button role="tab" aria-selected="false" data-tab="pulse">Pulse</button>
+    <button role="tab" aria-selected="false" data-tab="filter">Filter</button>
+    <button role="tab" aria-selected="false" data-tab="layers">Layers</button>
+    <button role="tab" aria-selected="false" data-tab="midi">MIDI<span class="led" id="midi-led"></span></button>
+  </nav>
+
+  <!-- FIELD -->
+  <div class="pane" data-pane="field">
+    <div class="section">
+      <div class="label-row"><span class="label">Field</span><span class="label dim">drag · double-click centers</span></div>
+      <div class="xy" id="xy" tabindex="0" aria-label="Morph pad: horizontal brightness, vertical depth">
+        <span class="xy-axis xy-x">darker ← brightness → brighter</span>
+        <span class="xy-axis xy-y">depth</span>
+        <div class="xy-dot" id="xy-dot"></div>
+      </div>
+    </div>
+    <div class="section">
+      <div class="label-row"><span class="label">Root</span><span class="label dim">[ ] fifths · glides at morph speed</span></div>
+      <div class="root-row">
+        <button class="chip" data-shift="0.5">−oct</button>
+        <button class="chip" data-shift="0.6666667">−5th</button>
+        <button class="chip" data-shift="1.5">+5th</button>
+        <button class="chip" data-shift="2">+oct</button>
+        <input id="root-in" class="root-in" type="number" min="20" max="400" step="0.01" value="55" aria-label="Root frequency in hertz">
+      </div>
+    </div>
+    <div class="section sliders">
+      <label class="slider"><span class="label">Morph</span><input id="morph" type="range" min="1" max="60" value="12"><span class="val" id="morph-v">12s</span></label>
+    </div>
+    <div class="section">
+      <div class="label-row"><span class="label">Partials 1–16</span><span class="label dim" id="rd-partials"></span></div>
+      <div class="ladder" id="ladder"></div>
+      <div class="meters" id="meters"></div>
+    </div>
+  </div>
+
+  <!-- PULSE -->
+  <div class="pane" data-pane="pulse" hidden>
+    <div class="section">
+      <div class="row-between" style="margin-bottom:12px">
+        <button class="tog wide" id="pulse-on" aria-pressed="true"><span class="led"></span>Pulse</button>
+        <span class="val">pads: ⇧ + Submerge</span>
+      </div>
+      <div class="label-row"><span class="label">Brainwave band</span><span class="label dim" id="band-rd">Theta · 6.11 Hz</span></div>
+      <div class="bandscale" id="bandscale">
+        <div class="bs-seg" style="--a:0;--b:.416">Delta</div>
+        <div class="bs-seg theta" style="--a:.416;--b:.624">Theta</div>
+        <div class="bs-seg" style="--a:.624;--b:.77">Alpha</div>
+        <div class="bs-seg" style="--a:.77;--b:1">Beta</div>
+        <div class="bs-target" id="bs-target"></div>
+        <div class="bs-mark" id="bs-mark"></div>
+      </div>
+      <div class="bs-ticks"><span>0.5</span><span>4</span><span>8</span><span>13</span><span>14 Hz</span></div>
+    </div>
+    <div class="section">
+      <div class="label-row"><span class="label">Entrainment tone</span><span class="label dim">knob 4 sets level</span></div>
+      <div class="seg" id="beat-modes">
+        <button data-beat="off">Off</button><button data-beat="binaural">Binaural</button><button data-beat="isochronic">Isochronic</button>
+      </div>
+      <p class="hint" id="beat-hint"></p>
+      <div class="label-row mt"><span class="label">Tone pitch</span><span class="label dim">harmonic of the root</span></div>
+      <div class="chips" id="carriers"></div>
+    </div>
+    <div class="section">
+      <div class="row-between">
+        <button class="tog wide" id="lock" aria-pressed="true"><span class="led"></span>Lock to root</button>
+        <span class="val" id="lock-rd">55 ÷ 9 = 6.11 Hz</span>
+      </div>
+      <p class="hint">Locked, the pulse snaps to an exact subharmonic of the drone, so it breathes in phase with the tuning instead of beating against it.</p>
+      <label class="slider mt"><span class="label">L / R</span><input id="spread" type="range" min="0" max="100" value="0"><span class="val" id="spread-v">0°</span></label>
+      <p class="hint">0° pulses both ears together. 180° alternates left and right.</p>
+    </div>
+    <div class="section">
+      <div class="row-between">
+        <button class="tog wide" id="descent" aria-pressed="false"><span class="led"></span>Descent</button>
+        <select id="descent-min" class="sel" aria-label="Descent length">
+          <option value="5">5 min</option><option value="10" selected>10 min</option><option value="20">20 min</option><option value="30">30 min</option>
+        </select>
+      </div>
+      <div class="morph-track"><div id="descent-bar" class="morph-bar" style="transform:scaleX(0)"></div></div>
+      <p class="hint" id="descent-rd">Glides the pulse from 10 Hz alpha down to the Rate knob, the way a guided session settles the room.</p>
+    </div>
+  </div>
+
+  <!-- FILTER -->
+  <div class="pane" data-pane="filter" hidden>
+    <div class="section">
+      <div class="label-row"><span class="label">Sculpt filter</span><span class="label dim">knobs 5–7</span></div>
+      <div class="seg" id="ftypes">
+        <button data-ft="lowpass">Low-pass</button><button data-ft="bandpass">Band</button><button data-ft="highpass">High-pass</button><button data-ft="formant">Vowel</button>
+      </div>
+      <p class="hint" id="ft-hint"></p>
+    </div>
+    <div class="section">
+      <div class="label-row"><span class="label">Motion speed</span><span class="label dim" id="motion-rd"></span></div>
+      <div class="seg" id="mdivs">
+        <button data-div="4">÷4</button><button data-div="8">÷8</button><button data-div="16">÷16</button><button data-div="32">÷32</button><button data-div="free">Free</button>
+      </div>
+      <p class="hint">÷ values lock the filter sweep to the pulse, so one sweep spans that many pulses.</p>
+      <label class="slider mt" id="free-row" hidden><span class="label">Rate</span><input id="mfree" type="range" min="0" max="100" value="30"><span class="val" id="mfree-v"></span></label>
+    </div>
+    <div class="section">
+      <label class="slider"><span class="label">Low cut</span><input id="lowcut" type="range" min="20" max="200" value="25"><span class="val" id="lowcut-v">25 Hz</span></label>
+      <p class="hint">Raise this on small or Bluetooth speakers so they don't choke on sub energy they can't reproduce.</p>
+    </div>
+  </div>
+
+  <!-- LAYERS -->
+  <div class="pane" data-pane="layers" hidden>
+    <div class="section">
+      <div class="label-row"><span class="label">Layers · pad row 2</span><span class="label dim">fade in right away</span></div>
+      <div class="lrows" id="layers-a"></div>
+    </div>
+    <div class="section">
+      <div class="label-row"><span class="label">Loops · pad row 3</span><span class="label dim">start on the next bar</span></div>
+      <div class="lrows" id="layers-b"></div>
+      <p class="hint">Every loop can be swapped for your own recording (a handpan take, bowls, voice). It loops from the start of the file and stays on this device.</p>
+      <input type="file" id="clip-file" accept="audio/*" hidden>
+    </div>
+    <div class="section">
+      <div class="btn-row"><button class="chip" id="layers-stop">Stop all layers</button></div>
+      <p class="hint">Harder pad hits bring a layer in louder. Tempo comes from the pulse rate: loops step on each pulse, and a bar is 8 pulses.</p>
+    </div>
+  </div>
+
+  <!-- MIDI -->
+  <div class="pane" data-pane="midi" hidden>
+    <div class="section">
+      <div class="row-between">
+        <button class="tog wide" id="midi" aria-pressed="false"><span class="led"></span>Connect MIDI</button>
+        <span class="val" id="midi-dev">not connected</span>
+      </div>
+      <div class="monitor" id="monitor" aria-live="off">Waiting for a controller…</div>
+    </div>
+    <div class="section">
+      <div class="label-row"><span class="label">Mapping</span><span class="label dim">saved in the page link · bookmark it</span></div>
+      <div class="btn-row">
+        <button class="chip on-accent" id="wiz-start">Map my controller</button>
+        <button class="chip" id="learn" aria-pressed="false">Learn one</button>
+      </div>
+      <p class="hint">Map my controller walks you through all 16 pads and 8 knobs in about 30 seconds. Learn one: tap any control here, then touch the hardware.</p>
+      <label class="slider mt"><span class="label">Knobs</span>
+        <select id="enc-mode" class="sel"><option value="auto">Auto-detect</option><option value="abs">Absolute 0–127</option><option value="rel2">Relative (1 / 127)</option><option value="rel64">Relative (63 / 65)</option></select><span></span></label>
+      <label class="slider"><span class="label">Catch</span>
+        <select id="pickup" class="sel"><option value="jump">Jump to knob</option><option value="pickup">Pick up when crossed</option></select><span></span></label>
+      <div class="btn-row mt">
+        <button class="chip" id="map-export">Export</button>
+        <button class="chip" id="map-import">Import</button>
+        <button class="chip" id="map-reset">Reset</button>
+        <input type="file" id="map-file" accept="application/json" hidden>
+      </div>
+      <div class="bindings" id="bindings"></div>
+    </div>
+  </div>
+
+  <footer class="panel-foot">
+    <button class="tog" id="drift" aria-pressed="false" title="Autopilot through scenes (D)"><span class="led"></span>Drift</button>
+    <button class="tog" id="rec" aria-pressed="false" title="Record output to a file"><span class="led rec"></span><span id="rec-l">Record</span></button>
+    <button class="tog" id="sleep" aria-pressed="false" title="Sleep timer: fades out, then stops"><span class="led"></span><span id="sleep-l">Sleep</span></button>
+    <button class="tog" id="full" title="Hide controls on this screen (H). Tap twice to bring them back.">Hide</button>
+    <button class="tog" id="screen" aria-pressed="false" title="Open the visuals in their own window for a second display"><span class="led"></span>Screen</button>
+  </footer>
+  <div class="status" id="status" role="status" aria-live="polite"></div>
+</aside>
+
+<div id="wizard" class="wizard" hidden>
+  <div class="wz-step" id="wz-step">Step 1 of 24</div>
+  <div class="wz-title" id="wz-title">Hit the top-left pad</div>
+  <div class="wz-sub" id="wz-sub"></div>
+  <div class="wz-btns"><button class="chip" id="wz-back">Back</button><button class="chip" id="wz-skip">Skip</button><button class="chip" id="wz-cancel">Done</button></div>
 </div>
 
-<div id="toast" class="toast" role="status" aria-live="polite"></div>
-<div id="sleep-ov" class="sleep-ov" hidden><div><div class="so-t">Goodnight</div><div class="so-s">The sleep timer has finished. Tap to wake the sound.</div></div></div>
+<button id="show" class="show-btn" hidden aria-label="Show controls">Show controls</button>
+<div id="sleep-ov" class="sleep-ov" hidden><div><div class="so-t">Sleep timer finished</div><div class="so-s">Tap anywhere to wake the sound</div></div></div>
+<div id="proj-wait" class="proj-wait" hidden><div><div class="so-t">Harmonic Field · Screen</div><div class="so-s" id="proj-msg">Waiting for the controls window…</div><div class="so-s dim">Tap to go full screen</div></div></div>
 
 <script>
 /* Harmonic Field — generative audio engine
@@ -1443,146 +1610,853 @@ window.LAYER_DEFS = LAYER_DEFS; window.LayerRack = LayerRack; window.SleepTimer 
 
 </script>
 <script>
-/* Harmonic Field — simple / installation version.
-   8 buttons + 2 knobs, laid out like a small shortcut keyboard so it can be mapped later without MIDI:
-   buttons = keys 1–8, knob A (volume) = - / =, knob B (tone) = [ / ].  Any key or tap starts it.
-   Controls hide themselves when idle, so a projector shows only the field. */
+/* Harmonic Field — Screen window (?view=projector).
+   Renders only the visuals, driven live by the controls window over a BroadcastChannel.
+   No audio runs here, so the sound always comes from the controls device. */
 (() => {
+  if (!/[?&]view=projector\b/.test(location.search)) return;
+  window.__projector = true;
+  document.body.classList.add('proj-view');
+  document.title = 'Harmonic Field · Screen';
+  const $ = id => document.getElementById(id);
+  const wait = $('proj-wait'); wait.hidden = false;
+  const fft = new Uint8Array(1024);
+  const P = {
+    analyser: { frequencyBinCount: 1024, fftSize: 2048, getByteFrequencyData(a) { a.set(fft.subarray(0, a.length)); } },
+    ctx: { sampleRate: 48000 },
+    v: JSON.parse(JSON.stringify(SCENES[0].v)), xy: { x: 0, y: 0 },
+    _e: { brightness: .2, hollow: .1, beating: .3, density: .1, timbre: .2, depth: .55, air: .1, warmth: .3, motion: .18, ground: 1, exotic: 0, swell: 0, submerge: 0, suspend: 0 },
+    _pulse: 0, pulseOn: true, ctl: { pulseDepth: 0, cutoff: 1 }, filterType: 'lowpass',
+    eff() { return this._e; }, pulseValue() { return this._pulse; },
+  };
+  const V = new FieldVisual($('field'), P);
+  let last = 0;
+  if (!window.BroadcastChannel) { $('proj-msg').textContent = 'This browser can’t link windows. Use Safari 15.4+ or Chrome.'; return; }
+  const bc = new BroadcastChannel('harmonic-field');
+  bc.onmessage = ({ data: d }) => {
+    if (!d || typeof d !== 'object') return;
+    if (d.t === 'f') {
+      if (d.fft && d.fft.length) fft.set(d.fft.subarray ? d.fft.subarray(0, 1024) : d.fft);
+      P.ctx.sampleRate = d.sr; P.v = d.v; P.xy = d.xy; P._e = d.e; P._pulse = d.pulse;
+      P.pulseOn = d.pon; P.ctl.pulseDepth = d.pd; P.ctl.cutoff = d.cut; P.filterType = d.ft;
+      last = performance.now();
+    } else if (d.t === 's' && d.ev) V.strike(d.ev);
+    else if (d.t === 'c') { V.ripples[V.ri] = [0, 0, V.now(), d.v || .5]; V.ri = (V.ri + 1) % V.ripples.length; }
+    else if (d.t === 'bye') { last = 0; }
+  };
+  const hello = () => bc.postMessage({ t: 'hello' });
+  hello(); setInterval(hello, 1000);
+  window.addEventListener('beforeunload', () => bc.postMessage({ t: 'gone' }));
+  // tap / click toggles full screen (iPad Safari supports this on an external display window)
+  document.addEventListener('pointerdown', () => {
+    const d = document, el = d.documentElement;
+    const fs = d.fullscreenElement || d.webkitFullscreenElement;
+    try {
+      if (fs) (d.exitFullscreen || d.webkitExitFullscreen).call(d);
+      else (el.requestFullscreen || el.webkitRequestFullscreen).call(el);
+    } catch {}
+  });
+  document.addEventListener('keydown', e => { if (e.key === 'f') document.documentElement.requestFullscreen?.(); });
+  function frame() {
+    const live = performance.now() - last < 2500;
+    wait.classList.toggle('connected', live);
+    $('proj-msg').textContent = live ? 'Connected' : (last ? 'Lost the controls window. Is it still open?' : 'Waiting for the controls window… press Screen there.');
+    if (!live) { P._e.swell *= .98; P._pulse *= .9; }
+    V.frame();
+    requestAnimationFrame(frame);
+  }
+  requestAnimationFrame(frame);
+})();
+
+</script>
+<script>
+/* Harmonic Field — UI wiring, 4x4 pads + 8 knobs (mirrors a hardware controller), MIDI learn,
+   brainwave pulse + sculpt filter controls, audio recovery, drift autopilot, recording */
+(() => {
+  if (window.__projector) return;
   const E = new HarmonicEngine();
   const V = new FieldVisual(document.getElementById('field'), E);
   const rack = new LayerRack(E);
   const sleep = new SleepTimer(E, rack);
   E.onStarted = () => rack.init();
-  E.onBell = ev => V.strike(ev);
-  rack.onEvent = ev => { if (ev.type === 'heart') { V.ripples[V.ri] = [0, 0, V.now(), .4]; V.ri = (V.ri + 1) % V.ripples.length; } };
+  const bc = window.BroadcastChannel ? new BroadcastChannel('harmonic-field') : null;
+  let projLast = 0;
+  const projLive = () => performance.now() - projLast < 3000;
+  E.onBell = ev => { V.strike(ev); if (bc && projLive()) bc.postMessage({ t: 's', ev }); };
+  rack.onEvent = ev => {
+    if (ev.type === 'heart') { V.ripples[V.ri] = [0, 0, V.now(), .45]; V.ri = (V.ri + 1) % V.ripples.length; if (bc && projLive()) bc.postMessage({ t: 'c', v: .45 }); }
+  };
+  rack.onChange = () => { renderPads(); renderLayers(); };
   window.__hf = { engine: E, visual: V, rack, sleep };
   const $ = id => document.getElementById(id);
-  const clampv = (x, a = 0, b = 1) => Math.max(a, Math.min(b, x));
-
-  E.beatMode = 'isochronic'; E.ctl.beatLevel = .22; E.ctl.pulseDepth = .3; E.lowCut = 35;
-
-  const PRESETS = [
-    { name: 'Grounding', sub: 'Warm and steady', scene: 0, rate: 6, depth: .3, layers: { bowls: .6 } },
-    { name: 'Ocean Breath', sub: 'Slow waves of air', scene: 1, rate: 5, depth: .35, layers: { rain: .5 } },
-    { name: 'Bloom', sub: 'Bright and open', scene: 2, rate: 8, depth: .25, layers: { handpan: .6 } },
-    { name: 'Starlight', sub: 'Shimmer and voices', scene: 3, rate: 7, depth: .3, layers: { shimmer: .55, choir: .3 } },
-    { name: 'Deep Rest', sub: 'For letting go', scene: 4, rate: 3, depth: .4, layers: { heart: .4 } },
-  ];
-  let current = 0, journey = null;
-  function applyPreset(i, seconds = 10) {
-    const P = PRESETS[i]; current = i;
-    E.setScene(P.scene, seconds);
-    E.setCtl('pulseRate', UNMAP.pulseRate(P.rate)); E.setCtl('pulseDepth', P.depth);
-    LAYER_DEFS.forEach(d => {
-      const want = P.layers[d.id];
-      if (want) { rack.setLevel(d.id, want); rack.toggle(d.id, true); } else rack.toggle(d.id, false);
-    });
-    toast(P.name); render();
-  }
-  function toggleJourney() {
-    if (journey) { clearTimeout(journey); journey = null; toast('Journey off'); render(); return; }
-    const next = () => { applyPreset((current + 1) % PRESETS.length, 40); journey = setTimeout(next, (4 + Math.random() * 3) * 60000); };
-    journey = setTimeout(next, (4 + Math.random() * 3) * 60000);
-    toast('Journey: drifts to a new mood every few minutes'); render();
-  }
-  const SLEEP_STEPS = [0, 15, 30, 60];
-  function cycleSleep() {
-    const i = SLEEP_STEPS.indexOf(sleep.minutes), n = SLEEP_STEPS[(i + 1) % SLEEP_STEPS.length];
-    sleep.set(n); toast(n ? `Sleep in ${n} minutes` : 'Sleep timer off'); render();
-  }
-  let paused = false;
-  async function togglePause() {
-    if (!E.ctx) return;
-    paused = !paused;
-    if (paused) { E.master.gain.setTargetAtTime(0, E.ctx.currentTime, .6); setTimeout(() => paused && E.ctx.suspend(), 2500); toast('Paused'); }
-    else { await E.ctx.resume(); E.setVolume(E.volume); toast('Playing'); }
-    render();
-  }
-
-  /* 8 buttons, same order as keys 1–8 */
-  const BTNS = [
-    ...PRESETS.map((p, i) => ({ name: p.name, sub: p.sub, act: () => applyPreset(i), lit: () => current === i, sw: SCENES[p.scene].v })),
-    { name: 'Journey', sub: 'Let it drift', act: toggleJourney, lit: () => !!journey },
-    { name: 'Sleep', sub: () => sleep.minutes ? sleep.label() : 'Off', act: cycleSleep, lit: () => sleep.minutes > 0 },
-    { name: 'Pause', sub: () => paused ? 'Paused' : 'Playing', act: togglePause, lit: () => paused },
-  ];
+  const clamp = (x, a = 0, b = 1) => Math.max(a, Math.min(b, x));
+  const status = msg => { $('status').textContent = msg; clearTimeout(status._t); status._t = setTimeout(() => $('status').textContent = '', 6000); };
   const rgb = a => `rgb(${a.map(x => Math.round(x * 255)).join(',')})`;
-  const btnEls = BTNS.map((b, i) => {
-    const el = document.createElement('button'); el.className = 'sbtn';
-    const sw = b.sw ? `<span class="sw" style="background:radial-gradient(circle at 35% 35%, ${rgb(b.sw.c)}, ${rgb(b.sw.a)} 55%, ${rgb(b.sw.b)})"></span>` : '<span class="pled"></span>';
-    el.innerHTML = `${sw}<span class="sk">${i + 1}</span><span class="sn">${b.name}</span><span class="ss"></span>`;
-    el.onclick = () => { if (!E.ctx) return; b.act(); flash(i); };
-    $('sbtns').appendChild(el); return el;
-  });
-  function flash(i) { const el = btnEls[i]; el.classList.remove('hit'); void el.offsetWidth; el.classList.add('hit'); }
-  function render() {
-    BTNS.forEach((b, i) => {
-      btnEls[i].classList.toggle('lit', !!b.lit());
-      btnEls[i].querySelector('.ss').textContent = typeof b.sub === 'function' ? b.sub() : b.sub;
+  // Settings live in the URL hash (#s=...), so a bookmark restores your mapping and sound. No browser storage needed.
+  const hashState = (() => { try { const m = location.hash.match(/s=([^&]+)/); return m ? JSON.parse(decodeURIComponent(escape(atob(m[1].replace(/-/g, '+').replace(/_/g, '/'))))) : {}; } catch { return {}; } })();
+  const store = {
+    get(k, d) { return k in hashState ? hashState[k] : d; },
+    set(k, v) {
+      hashState[k] = v; clearTimeout(store._t);
+      store._t = setTimeout(() => {
+        try {
+          const b = btoa(unescape(encodeURIComponent(JSON.stringify(hashState)))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+          history.replaceState(null, '', '#s=' + b);
+        } catch {}
+      }, 400);
+    },
+  };
+  const fmtHz = hz => hz >= 1000 ? (hz / 1000).toFixed(hz >= 10000 ? 0 : 1) + ' kHz' : Math.round(hz) + ' Hz';
+  const GREEK = { Delta: 'δ', Theta: 'θ', Alpha: 'α', Beta: 'β' };
+
+  /* ================= Scenes / gestures / toggles (shared by pads, keys, MIDI) ================= */
+  function goScene(i, seconds) {
+    E.setScene(i, seconds);
+    $('rd-scene').textContent = SCENES[i].name;
+    $('scene-note').textContent = SCENES[i].note;
+    if (seconds != null) { $('morph').value = Math.round(seconds); $('morph-v').textContent = Math.round(seconds) + 's'; }
+    renderPads();
+  }
+  $('scene-note').textContent = SCENES[0].note;
+  function gesture(g, on) { if (g === 'scatter') { if (on) E.scatter(); return; } E.setGesture(g, on); }
+  function shiftRoot(r) { E.shiftRoot(r); syncRoot(); }
+  function cycleBeat() { setBeat(BEAT_MODES[(BEAT_MODES.indexOf(E.beatMode) + 1) % BEAT_MODES.length]); }
+  function cycleFilter() { setFilterType(FILTER_TYPES[(FILTER_TYPES.indexOf(E.filterType) + 1) % FILTER_TYPES.length]); }
+  function togglePulse() { E.pulseOn = !E.pulseOn; status(E.pulseOn ? 'Pulse on' : 'Pulse off'); $('pulse-on').setAttribute('aria-pressed', E.pulseOn); renderPads(); }
+  function toggleDescent() {
+    const on = E.startDescent();
+    $('descent').setAttribute('aria-pressed', on);
+    status(on ? `Descent: 10 Hz → ${E.targetRate().toFixed(2)} Hz over ${E.descentMinutes} min` : 'Descent stopped');
+    renderPads();
+  }
+
+  /* ================= Pads (4x4, row-major from top-left) =================
+     Row 1 scenes · Row 2 layers · Row 3 loops · Row 4 drone moves + Shift.
+     Hold Shift (bottom-right pad, or the Shift key) for the second function printed on each pad. */
+  const clearAll = () => { rack.stopAll(); status('All layers and loops fading out'); };
+  const PADS = [
+    ...SCENES.slice(0, 4).map((s, i) => ({ name: s.name, kind: 'trigger', scene: i, on: () => goScene(i), lit: () => E.scene === i })),
+    ...LAYER_DEFS.map(d => ({ name: d.name, kind: 'toggle', layer: d.id, cls: d.kind, on: vel => rack.toggle(d.id, undefined, vel),
+      lit: () => rack.isOn(d.id), sub: () => rack.L[d.id].pending ? 'next bar' : rack.L[d.id].clip ? 'my clip' : rack.isOn(d.id) ? 'on' : d.kind })),
+    { name: 'Swell', kind: 'hold', g: 'swell', sub: () => 'hold', cls: 'mod' },
+    { name: 'Submerge', kind: 'hold', g: 'submerge', sub: () => 'hold', cls: 'mod' },
+    { name: 'Freeze', kind: 'hold', g: 'suspend', sub: () => 'hold', cls: 'mod' },
+    { name: 'Shift', kind: 'shift', sub: () => 'hold', cls: 'shiftpad' },
+  ];
+  // second functions (while Shift is held)
+  const SHIFT = {
+    0: { name: SCENES[4].name, on: () => goScene(4), sub: () => 'scene' },
+    1: { name: 'Drift', on: () => toggleDrift(), sub: () => drift ? 'on' : 'off' },
+    2: { name: '−5th', on: () => shiftRoot(2 / 3), sub: () => E.targetRoot.toFixed(1) },
+    3: { name: '+5th', on: () => shiftRoot(1.5), sub: () => E.targetRoot.toFixed(1) },
+    12: { name: 'Scatter', on: vel => E.scatter(vel), sub: () => 'cascade' },
+    13: { name: 'Pulse', on: () => togglePulse(), sub: () => E.pulseOn ? 'on' : 'off' },
+    14: { name: 'Descent', on: () => toggleDescent(), sub: () => E.descent ? Math.round(E.descentProgress() * 100) + '%' : 'α→θ' },
+  };
+  for (let i = 4; i < 12; i++) SHIFT[i] = { name: 'Stop all', on: clearAll, sub: () => 'layers' };
+  const KEYHINT = ['1', '2', '3', '4', 'Q', 'W', 'E', 'R', 'A', 'S', 'D', 'F', 'Z', 'X', 'C', '⇧'];
+  const SHIFT_PAD = 15;
+  const padEls = [];
+  const held = new Set();
+  const pressedAs = {};
+  let shiftKey = false;
+  const shiftOn = () => held.has(SHIFT_PAD) || shiftKey;
+  PADS.forEach((p, i) => {
+    const b = document.createElement('button');
+    b.className = 'gpad' + (p.cls ? ' ' + p.cls : '') + (p.kind === 'hold' ? ' hold' : '') + (SHIFT[i] || i === SHIFT_PAD ? '' : ' noshift');
+    b.dataset.i = i;
+    const sw = p.scene != null ? `<span class="sw" style="background:radial-gradient(circle at 35% 35%, ${rgb(SCENES[p.scene].v.c)}, ${rgb(SCENES[p.scene].v.a)} 55%, ${rgb(SCENES[p.scene].v.b)})"></span>` : '<span class="pled"></span>';
+    b.innerHTML = `${sw}<span class="gk">${KEYHINT[i]}</span><span class="gn">${p.name}</span><span class="gs"></span><span class="gmap"></span>`;
+    b.setAttribute('aria-label', p.name);
+    b.addEventListener('pointerdown', e => {
+      e.preventDefault();
+      if (learnPick('pad', i)) return;
+      b.setPointerCapture?.(e.pointerId); padPress(i, true, .8);
     });
-    $('vol-v').textContent = Math.round(E.ctl.level * 100);
-    $('tone-v').textContent = tone < -.33 ? 'darker' : tone > .33 ? 'brighter' : 'balanced';
-    $('vol').value = Math.round(E.ctl.level * 100); $('tone').value = Math.round((tone + 1) * 50);
+    const up = () => { if (held.has(i)) padPress(i, false); };
+    b.addEventListener('pointerup', up); b.addEventListener('pointercancel', up); b.addEventListener('lostpointercapture', up);
+    b.addEventListener('keydown', e => { if ((e.key === 'Enter' || e.key === ' ') && !e.repeat) { e.preventDefault(); e.stopPropagation(); padPress(i, true, .8); } });
+    b.addEventListener('keyup', e => { if (e.key === 'Enter' || e.key === ' ') { e.stopPropagation(); padPress(i, false); } });
+    $('padgrid').appendChild(b); padEls.push(b);
+  });
+  function padPress(i, on, vel = .8) {
+    const p = PADS[i]; if (!p || !E.ctx) return;
+    if (on) {
+      held.add(i); flash(i);
+      if (p.kind === 'shift') { renderPads(); return; }
+      if (shiftOn() && SHIFT[i]) { pressedAs[i] = 'shift'; SHIFT[i].on(vel); renderPads(); return; }
+      pressedAs[i] = 'main';
+      if (p.g) gesture(p.g, true); else if (p.on) p.on(vel);
+    } else {
+      held.delete(i);
+      if (pressedAs[i] === 'main' && p.g) gesture(p.g, false);
+      delete pressedAs[i];
+    }
+    renderPads();
   }
-  /* 2 knobs */
-  let tone = 0;
-  const setVol = v => { E.setCtl('level', clampv(v)); render(); };
-  const setTone = v => { tone = clampv(v, -1, 1); E.setXY(tone, E.xy.y); render(); };
-  $('vol').oninput = e => setVol(e.target.value / 100);
-  $('tone').oninput = e => setTone(e.target.value / 50 - 1);
-
-  /* toast + idle hide */
-  let toastT = 0, idleT = 0;
-  function toast(msg) { const t = $('toast'); t.textContent = msg; t.classList.add('on'); clearTimeout(toastT); toastT = setTimeout(() => t.classList.remove('on'), 2200); }
-  function wake() {
-    document.body.classList.remove('idle');
-    clearTimeout(idleT);
-    idleT = setTimeout(() => { if (E.ctx) document.body.classList.add('idle'); }, 12000);
+  function flash(i) { const el = padEls[i]; el.classList.remove('hit'); void el.offsetWidth; el.classList.add('hit'); }
+  function renderPads() {
+    const sh = shiftOn();
+    document.body.classList.toggle('shifted', sh);
+    PADS.forEach((p, i) => {
+      const el = padEls[i], S = sh && SHIFT[i];
+      const lit = S ? false : (!!(p.lit && p.lit()) || ((p.kind === 'hold' || p.kind === 'shift') && held.has(i)));
+      el.classList.toggle('lit', lit || (p.kind === 'shift' && sh));
+      el.classList.toggle('down', held.has(i));
+      el.classList.toggle('pending', !S && !!p.layer && !!rack.L[p.layer].pending);
+      el.querySelector('.gn').textContent = S ? S.name : p.name;
+      el.querySelector('.gs').textContent = S ? S.sub() : p.sub ? p.sub() : '';
+      el.querySelector('.gmap').textContent = bindLabel(map.pads[i]);
+    });
   }
-  ['pointerdown', 'pointermove'].forEach(ev => window.addEventListener(ev, e => { if (e.type === 'pointermove' && e.pointerType !== 'mouse') return; wake(); }, { passive: true }));
 
-  /* keyboard: 1–8 buttons, - = volume, [ ] tone. Keys never reveal the controls (good for installations). */
-  window.addEventListener('keydown', e => {
-    if (e.repeat && !['Minus', 'Equal', 'BracketLeft', 'BracketRight'].includes(e.code)) return;
-    if (!E.ctx) { begin(); return; }
-    if (sleep.slept) { wakeSleep(); return; }
-    const m = /^Digit([1-8])$/.exec(e.code) || /^Numpad([1-8])$/.exec(e.code);
-    if (m) { const i = +m[1] - 1; BTNS[i].act(); flash(i); return; }
-    if (e.code === 'Minus') { setVol(E.ctl.level - .04); toast('Volume ' + Math.round(E.ctl.level * 100)); }
-    if (e.code === 'Equal') { setVol(E.ctl.level + .04); toast('Volume ' + Math.round(E.ctl.level * 100)); }
-    if (e.code === 'BracketLeft') { setTone(tone - .08); toast('Tone ' + $('tone-v').textContent); }
-    if (e.code === 'BracketRight') { setTone(tone + .08); toast('Tone ' + $('tone-v').textContent); }
+  /* ================= Knobs (2x4) ================= */
+  const KNOBS = [
+    { k: 'pulseRate', name: 'Rate', def: E.ctl.pulseRate, fmt: () => { const hz = E.pulseHz(); return `${GREEK[BAND(hz)]} ${hz.toFixed(2)}`; }, accent: 'pulse' },
+    { k: 'pulseDepth', name: 'Depth', def: .35, fmt: v => Math.round(v * 100) + '%', accent: 'pulse' },
+    { k: 'pulseShape', name: 'Shape', def: .15, fmt: v => v < .2 ? 'sine' : v < .55 ? 'round' : v < .85 ? 'firm' : 'gate', accent: 'pulse' },
+    { k: 'beatLevel', name: 'Tone', def: .35, fmt: v => E.beatMode === 'off' ? 'off' : Math.round(v * 100) + '%', accent: 'pulse' },
+    { k: 'cutoff', name: 'Cutoff', def: 1, fmt: v => E.filterType === 'formant' ? `“${E.vowelName()}”` : fmtHz(MAP.cutoff(v)) },
+    { k: 'resonance', name: 'Reso', def: .12, fmt: v => 'Q ' + MAP.resonance(v).toFixed(1) },
+    { k: 'motion', name: 'Motion', def: 0, fmt: v => v < .01 ? 'still' : '±' + (MAP.motion(v) / 1200).toFixed(2) + ' oct' },
+    { k: 'level', name: 'Level', def: .8, fmt: v => Math.round(v * 100) },
+  ];
+  const knobEls = [];
+  const ARC = 270, R = 19, CIRC = 2 * Math.PI * R, ARCLEN = CIRC * ARC / 360;
+  KNOBS.forEach((K, i) => {
+    const w = document.createElement('div');
+    w.className = 'knob' + (K.accent ? ' ' + K.accent : '');
+    w.tabIndex = 0; w.setAttribute('role', 'slider'); w.setAttribute('aria-label', K.name);
+    w.setAttribute('aria-valuemin', 0); w.setAttribute('aria-valuemax', 100);
+    w.innerHTML = `<svg viewBox="0 0 48 48" aria-hidden="true"><circle class="kt" cx="24" cy="24" r="${R}" stroke-dasharray="${ARCLEN} ${CIRC}" transform="rotate(135 24 24)"/><circle class="kv" cx="24" cy="24" r="${R}" stroke-dasharray="0 ${CIRC}" transform="rotate(135 24 24)"/><line class="kp" x1="24" y1="24" x2="24" y2="10"/></svg><span class="kn">${K.name}</span><span class="kval"></span><span class="gmap"></span>`;
+    let drag = null;
+    w.addEventListener('pointerdown', e => {
+      if (learnPick('knob', i)) return;
+      drag = { y: e.clientY, v: E.ctl[K.k] }; w.setPointerCapture(e.pointerId); w.classList.add('drag');
+    });
+    w.addEventListener('pointermove', e => { if (drag) setKnob(i, drag.v + (drag.y - e.clientY) / 180, 'ui'); });
+    const end = () => { drag = null; w.classList.remove('drag'); };
+    w.addEventListener('pointerup', end); w.addEventListener('pointercancel', end);
+    w.addEventListener('wheel', e => { e.preventDefault(); setKnob(i, E.ctl[K.k] - Math.sign(e.deltaY) * .02, 'ui'); }, { passive: false });
+    w.addEventListener('dblclick', () => setKnob(i, K.def, 'ui'));
+    w.addEventListener('keydown', e => {
+      const d = { ArrowUp: .02, ArrowRight: .02, ArrowDown: -.02, ArrowLeft: -.02, PageUp: .1, PageDown: -.1 }[e.key];
+      if (d) { e.preventDefault(); e.stopPropagation(); setKnob(i, E.ctl[K.k] + d, 'ui'); }
+    });
+    $('knobs').appendChild(w); knobEls.push(w);
+  });
+  function setKnob(i, v, src) {
+    const K = KNOBS[i]; E.setCtl(K.k, clamp(v));
+    if (src === 'ui') pick[i] = false; // hardware must re-catch after a screen move (pickup mode)
+    renderKnob(i);
+  }
+  function renderKnob(i) {
+    const K = KNOBS[i], el = knobEls[i], v = E.ctl[K.k];
+    el.querySelector('.kv').setAttribute('stroke-dasharray', `${ARCLEN * v} ${CIRC}`);
+    el.querySelector('.kp').setAttribute('transform', `rotate(${-135 + v * ARC} 24 24)`);
+    el.querySelector('.kval').textContent = K.fmt(v);
+    el.querySelector('.gmap').textContent = bindLabel(map.knobs[i]?.key);
+    el.setAttribute('aria-valuenow', Math.round(v * 100)); el.setAttribute('aria-valuetext', K.fmt(v));
+  }
+  const renderKnobs = () => KNOBS.forEach((_, i) => renderKnob(i));
+
+  /* ================= Tabs ================= */
+  document.querySelectorAll('[data-tab]').forEach(t => t.onclick = () => {
+    document.querySelectorAll('[data-tab]').forEach(x => x.setAttribute('aria-selected', x === t));
+    document.querySelectorAll('[data-pane]').forEach(p => p.hidden = p.dataset.pane !== t.dataset.tab);
+    document.body.classList.toggle('midi-tab', t.dataset.tab === 'midi');
+    updateShift();
   });
 
-  /* audio health + keep the screen awake */
-  const kick = () => { if (E.ctx && !paused && !sleep.slept && E.ctx.state !== 'running') E.resume(); };
+  /* ================= Field tab ================= */
+  const xy = $('xy'), dot = $('xy-dot');
+  let dragging = false;
+  const setXYFromEvent = e => {
+    const r = xy.getBoundingClientRect();
+    const x = clamp((e.clientX - r.left) / r.width), y = clamp((e.clientY - r.top) / r.height);
+    setXY(x * 2 - 1, 1 - y * 2);
+  };
+  function setXY(x, y) {
+    E.setXY(x, y);
+    dot.style.left = ((E.xy.x + 1) / 2 * 100) + '%';
+    dot.style.top = ((1 - E.xy.y) / 2 * 100) + '%';
+  }
+  xy.addEventListener('pointerdown', e => { dragging = true; xy.setPointerCapture(e.pointerId); setXYFromEvent(e); });
+  xy.addEventListener('pointermove', e => dragging && setXYFromEvent(e));
+  xy.addEventListener('pointerup', () => dragging = false);
+  xy.addEventListener('dblclick', () => setXY(0, 0));
+  xy.addEventListener('keydown', e => {
+    const s = .08, k = e.key;
+    if (!['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown'].includes(k)) return;
+    e.preventDefault(); e.stopPropagation();
+    setXY(E.xy.x + (k === 'ArrowRight' ? s : k === 'ArrowLeft' ? -s : 0), E.xy.y + (k === 'ArrowUp' ? s : k === 'ArrowDown' ? -s : 0));
+  });
+  document.querySelectorAll('[data-shift]').forEach(b => b.onclick = () => shiftRoot(parseFloat(b.dataset.shift)));
+  $('root-in').addEventListener('change', e => { const v = parseFloat(e.target.value); if (v >= 20 && v <= 400) { E.setRoot(v); status(`Gliding root to ${v.toFixed(2)} Hz`); renderCarriers(); } });
+  function syncRoot() { $('root-in').value = E.targetRoot.toFixed(2); renderCarriers(); renderPads(); }
+  $('morph').oninput = e => { E.morphSeconds = +e.target.value; $('morph-v').textContent = e.target.value + 's'; };
+
+  const ladder = $('ladder'), rungs = [];
+  for (let i = 0; i < H_COUNT; i++) {
+    const r = document.createElement('div'); r.className = 'rung' + ([7, 11, 13, 14].includes(i + 1) ? ' x' : '');
+    r.title = `Harmonic ${i + 1}`; ladder.appendChild(r); rungs.push(r);
+  }
+  const METERS = [['brightness', 'Brightness'], ['depth', 'Depth'], ['warmth', 'Warmth'], ['density', 'Strikes'], ['beating', 'Beating'], ['air', 'Air'], ['motion', 'Motion'], ['exotic', 'Septimal']];
+  const meterFills = {};
+  METERS.forEach(([k, n]) => {
+    const m = document.createElement('div'); m.className = 'meter';
+    m.innerHTML = `<span>${n}</span><div class="bar"><div class="fill"></div></div>`;
+    $('meters').appendChild(m); meterFills[k] = m.querySelector('.fill');
+  });
+
+  /* ================= Pulse tab ================= */
+  const BEAT_HINT = {
+    off: 'Only the drone pulses. The Depth knob controls how deep.',
+    binaural: 'Headphones only. Each ear gets a slightly different tone and your brain hears the difference as the pulse. On speakers the two tones blend in the air and the effect disappears.',
+    isochronic: 'Works on speakers, so it suits a sound bath. A soft tone on a harmonic of the root switches on and off at the pulse rate. Turn up Shape for a crisper beat.',
+  };
+  function setBeat(m) {
+    E.beatMode = m;
+    document.querySelectorAll('[data-beat]').forEach(b => b.setAttribute('aria-pressed', b.dataset.beat === m));
+    $('beat-hint').textContent = BEAT_HINT[m];
+    renderPads(); renderKnob(3); save();
+  }
+  document.querySelectorAll('[data-beat]').forEach(b => b.onclick = () => setBeat(b.dataset.beat));
+  const CARRIERS = [2, 3, 4, 5, 6, 8];
+  function renderCarriers() {
+    const el = $('carriers'); el.innerHTML = '';
+    CARRIERS.forEach(h => {
+      const b = document.createElement('button'); b.className = 'chip'; b.setAttribute('aria-pressed', E.carrierH === h);
+      b.innerHTML = `×${h} <span class="dimv">${Math.round(E.targetRoot * h)}</span>`;
+      b.onclick = () => { E.carrierH = h; renderCarriers(); save(); };
+      el.appendChild(b);
+    });
+  }
+  $('lock').onclick = () => { E.lockRoot = !E.lockRoot; $('lock').setAttribute('aria-pressed', E.lockRoot); renderKnob(0); save(); };
+  $('spread').oninput = e => { E.spread = e.target.value / 100; $('spread-v').textContent = Math.round(E.spread * 180) + '°'; save(); };
+  $('descent').onclick = toggleDescent;
+  $('descent-min').onchange = e => { E.descentMinutes = +e.target.value; if (E.descent) { E.startDescent(true); } save(); };
+  const bsPos = hz => clamp(Math.log(hz / .5) / Math.log(28));
+
+  $('pulse-on').onclick = togglePulse;
+
+  /* ================= Layers tab ================= */
+  const layerUI = {};
+  let clipTarget = null;
+  LAYER_DEFS.forEach(d => {
+    const row = document.createElement('div'); row.className = 'lrow';
+    const t = document.createElement('button'); t.className = 'tog l-' + d.kind; t.innerHTML = `<span class="led"></span>${d.name}`; t.title = d.note;
+    t.onclick = () => { if (!E.ctx) return; rack.toggle(d.id); };
+    const r = document.createElement('input'); r.type = 'range'; r.min = 0; r.max = 100; r.value = Math.round(d.level * 100); r.setAttribute('aria-label', d.name + ' level');
+    r.oninput = () => { rack.setLevel(d.id, r.value / 100); saveLayers(); };
+    const v = document.createElement('span'); v.className = 'val';
+    row.append(t, r, v);
+    let clipRow = null;
+    if (d.kind === 'loop') {
+      clipRow = document.createElement('div'); clipRow.className = 'lclip';
+      const n = document.createElement('span'); n.className = 'cn';
+      const load = document.createElement('button'); load.className = 'chip'; load.textContent = 'Use my recording';
+      load.onclick = () => { if (!E.ctx) return; clipTarget = d.id; $('clip-file').click(); };
+      const clr = document.createElement('button'); clr.className = 'chip'; clr.textContent = 'Built-in';
+      clr.onclick = async () => { await rack.clearClip(d.id); status(d.name + ': back to the built-in loop'); };
+      clipRow.append(n, load, clr); row.append(clipRow);
+      layerUI[d.id] = { t, r, v, n, clr };
+    } else layerUI[d.id] = { t, r, v };
+    $(d.kind === 'layer' ? 'layers-a' : 'layers-b').appendChild(row);
+  });
+  $('clip-file').onchange = async e => {
+    const f = e.target.files[0]; e.target.value = ''; if (!f || !clipTarget) return;
+    try { const sec = await rack.setClip(clipTarget, f); status(`${f.name} (${sec.toFixed(1)} s) now plays on ${rack.L[clipTarget].name}`); }
+    catch { status('That file could not be read as audio. Try WAV, MP3 or M4A.'); }
+  };
+  function renderLayers() {
+    LAYER_DEFS.forEach(d => {
+      const U = layerUI[d.id], S = rack.L[d.id];
+      U.t.setAttribute('aria-pressed', S.on);
+      U.v.textContent = Math.round(S.level * 100);
+      if (document.activeElement !== U.r) U.r.value = Math.round(S.level * 100);
+      if (U.n) { U.n.textContent = S.clip ? '♪ ' + S.clip.name : 'built-in loop'; U.clr.hidden = !S.clip; }
+    });
+  }
+  $('layers-stop').onclick = clearAll;
+  const saveLayers = () => store.set('hf-layers', Object.fromEntries(LAYER_DEFS.map(d => [d.id, +rack.L[d.id].level.toFixed(3)])));
+  (() => { const sv = store.get('hf-layers', null); if (sv && typeof sv === 'object') LAYER_DEFS.forEach(d => { const v = sv[d.id]; if (typeof v === 'number' && isFinite(v)) rack.L[d.id].level = clamp(v); }); })();
+
+  /* ================= Filter tab ================= */
+  const FT_HINT = {
+    lowpass: 'Cutoff darkens the whole field, reverb tail included. Reso adds a singing peak at the edge.',
+    bandpass: 'Keeps a single band. Sweep Cutoff to pick out single overtones, which sounds like overtone singing.',
+    highpass: 'Thins the field from below. Use it to lift everything up and out of the floor.',
+    formant: 'Cutoff morphs through the vowels U, O, A, E and I. Reso narrows the formants. It sounds like a throat singer shaping the drone.',
+  };
+  function setFilterType(t) {
+    E.filterType = t;
+    document.querySelectorAll('[data-ft]').forEach(b => b.setAttribute('aria-pressed', b.dataset.ft === t));
+    $('ft-hint').textContent = FT_HINT[t];
+    if (t !== 'lowpass' && E.ctl.cutoff > .95) setKnob(4, t === 'highpass' ? .15 : .5);
+    renderPads(); renderKnob(4); save();
+    status('Filter: ' + FILTER_NAMES[t]);
+  }
+  document.querySelectorAll('[data-ft]').forEach(b => b.onclick = () => setFilterType(b.dataset.ft));
+  function setDiv(d) {
+    E.motionSync = d !== 'free'; if (E.motionSync) E.motionDiv = +d;
+    document.querySelectorAll('[data-div]').forEach(b => b.setAttribute('aria-pressed', b.dataset.div === String(d)));
+    $('free-row').hidden = E.motionSync; save();
+  }
+  document.querySelectorAll('[data-div]').forEach(b => b.onclick = () => setDiv(b.dataset.div));
+  $('mfree').oninput = e => { E.motionFree = e.target.value / 100; save(); };
+  $('lowcut').oninput = e => { E.lowCut = +e.target.value; $('lowcut-v').textContent = e.target.value + ' Hz'; save(); };
+
+  /* ================= Drift ================= */
+  let drift = null;
+  function toggleDrift(force) {
+    const on = force ?? !drift;
+    if (on && !drift) {
+      const step = () => {
+        let n; do { n = Math.floor(Math.random() * SCENES.length); } while (n === E.scene);
+        goScene(n, 18 + Math.random() * 22);
+        if (Math.random() < .3) shiftRoot([1.5, 2 / 3, 4 / 3, .75][Math.floor(Math.random() * 4)]);
+        drift.next = performance.now() + (50 + Math.random() * 70) * 1000;
+      };
+      drift = { next: 0, step }; step();
+      status('Drift on: changes scene every 50–120 s');
+    } else if (!on && drift) { drift = null; status('Drift off'); }
+    $('drift').setAttribute('aria-pressed', !!drift);
+    renderPads();
+  }
+  $('drift').onclick = () => toggleDrift();
+
+  /* ================= Record ================= */
+  let rec = null, chunks = [];
+  $('rec').onclick = () => {
+    if (!E.ctx) return;
+    if (rec) { rec.stop(); return; }
+    if (!window.MediaRecorder) { status('Recording is not supported in this browser'); return; }
+    const types = ['audio/webm;codecs=opus', 'audio/webm', 'audio/mp4', 'audio/ogg'];
+    const mime = types.find(t => MediaRecorder.isTypeSupported(t));
+    chunks = [];
+    rec = new MediaRecorder(E.recDest.stream, mime ? { mimeType: mime, audioBitsPerSecond: 256000 } : undefined);
+    rec.ondataavailable = e => e.data.size && chunks.push(e.data);
+    rec.onstop = () => {
+      const blob = new Blob(chunks, { type: rec.mimeType });
+      const ext = rec.mimeType.includes('mp4') ? 'm4a' : rec.mimeType.includes('ogg') ? 'ogg' : 'webm';
+      const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
+      a.download = `harmonic-field-${new Date().toISOString().slice(0, 19).replace(/[:T]/g, '-')}.${ext}`; a.click();
+      rec = null; $('rec').setAttribute('aria-pressed', 'false'); $('rec-l').textContent = 'Record';
+      status('Recording saved');
+    };
+    rec.start(1000); rec.t0 = performance.now();
+    $('rec').setAttribute('aria-pressed', 'true');
+  };
+
+  /* ================= MIDI: mapping, learn, wizard, encoders ================= */
+  const DEFAULT_MAP = () => ({
+    // Common pad default: notes 36-51, bottom-left pad first (MPC convention); any channel.
+    pads: [48, 49, 50, 51, 44, 45, 46, 47, 40, 41, 42, 43, 36, 37, 38, 39].map(n => `n:*:${n}`),
+    knobs: new Array(8).fill(null),       // unmapped CCs are claimed automatically in the order you turn them
+  });
+  // Only accept well-formed bindings from a link or imported file (never trust them as markup).
+  const KEY_RE = /^[nc]:(\*|\d{1,2}):\d{1,3}$/, ENCS = ['auto', 'abs', 'rel2', 'rel64'];
+  function cleanMap(m) {
+    const d = DEFAULT_MAP();
+    if (!m || !Array.isArray(m.pads) || !Array.isArray(m.knobs)) return d;
+    return {
+      pads: d.pads.map((_, i) => typeof m.pads[i] === 'string' && KEY_RE.test(m.pads[i]) ? m.pads[i] : null),
+      knobs: d.knobs.map((_, i) => { const b = m.knobs[i]; return b && typeof b.key === 'string' && KEY_RE.test(b.key) ? { key: b.key, enc: ENCS.includes(b.enc) ? b.enc : 'auto' } : null; }),
+    };
+  }
+  let map = cleanMap(store.get('hf-map-v2', null));
+  const settings = store.get('hf-midi-set', { enc: 'auto', pickup: 'jump' });
+  if (!ENCS.includes(settings.enc)) settings.enc = 'auto';
+  if (!['jump', 'pickup'].includes(settings.pickup)) settings.pickup = 'jump';
+  $('enc-mode').value = settings.enc; $('pickup').value = settings.pickup;
+  $('enc-mode').onchange = e => { settings.enc = e.target.value; store.set('hf-midi-set', settings); for (const k in encHist) delete encHist[k]; };
+  $('pickup').onchange = e => { settings.pickup = e.target.value; store.set('hf-midi-set', settings); pick.fill(false); };
+  const saveMap = () => { store.set('hf-map-v2', map); renderPads(); renderKnobs(); renderBindings(); };
+  function bindLabel(key) {
+    if (!key) return '';
+    const [t, ch, n] = key.split(':');
+    return (t === 'n' ? 'N' : 'CC') + n + (ch !== '*' && ch !== '0' ? ` ch${+ch + 1}` : '');
+  }
+  function renderBindings() {
+    const el = $('bindings');
+    const rows = [...PADS.map((p, i) => [`Pad ${i + 1} · ${p.name}`, map.pads[i]]), ...KNOBS.map((K, i) => [`Knob ${i + 1} · ${K.name}`, map.knobs[i]?.key, map.knobs[i]?.enc])];
+    el.replaceChildren(...rows.map(([n, k, enc]) => {
+      const r = document.createElement('div'); r.className = 'brow';
+      const a = document.createElement('span'); a.textContent = n;
+      const b = document.createElement('span'); b.textContent = k ? bindLabel(k) + (enc && enc !== 'abs' ? ' rel' : '') : 'unmapped';
+      if (!k) b.className = 'dimv';
+      r.append(a, b); return r;
+    }));
+  }
+  const unbind = key => {
+    map.pads = map.pads.map(k => k === key ? null : k);
+    map.knobs = map.knobs.map(b => b && b.key === key ? null : b);
+  };
+  function findPad(t, ch, n) { let i = map.pads.indexOf(`${t}:${ch}:${n}`); if (i < 0) i = map.pads.indexOf(`${t}:*:${n}`); return i; }
+  function findKnob(ch, n) { let i = map.knobs.findIndex(b => b && b.key === `c:${ch}:${n}`); if (i < 0) i = map.knobs.findIndex(b => b && b.key === `c:*:${n}`); return i; }
+
+  // Encoder auto-detect: absolute knobs never repeat the same value while turning; relative encoders do (1,1,1 or 65,65,65).
+  const encHist = {};
+  const pick = new Array(8).fill(false), pickPrev = new Array(8).fill(null);
+  function encKind(key, v, bound) {
+    if (settings.enc !== 'auto') return settings.enc;
+    if (bound && bound !== 'auto') return bound;
+    const h = encHist[key] || (encHist[key] = { last: null, kind: null });
+    if (!h.kind && h.last != null) {
+      if (v === h.last) h.kind = (v <= 15 || v >= 113) ? 'rel2' : (v >= 49 && v <= 79 ? 'rel64' : 'abs');
+      else h.kind = 'abs';
+    }
+    h.last = v;
+    return h.kind; // null on the very first message -> ignored, avoids a jump
+  }
+  function knobMidi(i, key, v) {
+    const b = map.knobs[i], kind = encKind(key, v, b.enc);
+    if (!kind) return;
+    if (b.enc === 'auto' || !b.enc) { b.enc = kind; store.set('hf-map-v2', map); }
+    const cur = E.ctl[KNOBS[i].k];
+    if (kind === 'abs') {
+      const t = v / 127;
+      if (settings.pickup === 'pickup' && !pick[i]) {
+        const p = pickPrev[i]; pickPrev[i] = t;
+        if (Math.abs(t - cur) < .04 || (p != null && (p - cur) * (t - cur) <= 0)) pick[i] = true;
+        else { knobEls[i].classList.add('catch'); clearTimeout(knobEls[i]._c); knobEls[i]._c = setTimeout(() => knobEls[i].classList.remove('catch'), 600); return; }
+      }
+      setKnob(i, t, 'midi');
+    } else {
+      const d = kind === 'rel2' ? (v < 64 ? v : v - 128) : v - 64;
+      setKnob(i, cur + d / 100, 'midi');
+    }
+    knobEls[i].classList.add('touch'); clearTimeout(knobEls[i]._t); knobEls[i]._t = setTimeout(() => knobEls[i].classList.remove('touch'), 250);
+  }
+
+  // Learn-one mode
+  let learning = false, learnTarget = null;
+  $('learn').onclick = () => setLearn(!learning);
+  function setLearn(on) {
+    learning = on; learnTarget = null;
+    $('learn').setAttribute('aria-pressed', on);
+    document.body.classList.toggle('learning', on);
+    clearTargets();
+    if (on) status('Learn: tap a pad or knob on screen, then touch the hardware. Esc to finish.');
+  }
+  function clearTargets() { document.querySelectorAll('.target').forEach(x => x.classList.remove('target')); }
+  function learnPick(type, idx) {
+    if (wiz) return true;
+    if (!learning) return false;
+    learnTarget = { type, idx }; clearTargets();
+    (type === 'pad' ? padEls : knobEls)[idx].classList.add('target');
+    status(`Now touch the ${type === 'pad' ? 'pad' : 'knob'} for “${(type === 'pad' ? PADS : KNOBS)[idx].name}”`);
+    return true;
+  }
+
+  // Guided wizard: 16 pads then 8 knobs
+  let wiz = null;
+  const WIZ = [...PADS.map((p, i) => ({ type: 'pad', idx: i })), ...KNOBS.map((k, i) => ({ type: 'knob', idx: i }))];
+  const posName = i => `row ${Math.floor(i / 4) + 1}, pad ${i % 4 + 1}`;
+  $('wiz-start').onclick = () => {
+    if (!midiAccess) { connectMidi().then(ok => ok && startWiz()); return; }
+    startWiz();
+  };
+  function startWiz() { setLearn(false); wiz = { step: 0, used: new Set(), msgs: [] }; $('wizard').hidden = false; renderWiz(); }
+  function renderWiz() {
+    clearTargets();
+    if (wiz.step >= WIZ.length) { endWiz(true); return; }
+    const S = WIZ[wiz.step];
+    (S.type === 'pad' ? padEls : knobEls)[S.idx].classList.add('target');
+    $('wz-step').textContent = `Step ${wiz.step + 1} of ${WIZ.length}`;
+    if (S.type === 'pad') {
+      $('wz-title').textContent = `Hit the pad at ${posName(S.idx)}`;
+      $('wz-sub').textContent = `Row 1 is the top row. This pad will play “${PADS[S.idx].name}”.`;
+    } else {
+      $('wz-title').textContent = `Turn knob ${S.idx + 1} (${S.idx < 4 ? 'top' : 'bottom'} row, ${S.idx % 4 + 1} from left)`;
+      $('wz-sub').textContent = `Give it a slow turn. This knob will control “${KNOBS[S.idx].name}”.`;
+    }
+  }
+  function endWiz(done) {
+    wiz = null; $('wizard').hidden = true; clearTargets(); saveMap();
+    status(done ? 'Controller mapped. Bookmark this page to keep the mapping.' : 'Mapping saved.');
+  }
+  $('wz-skip').onclick = () => { wiz.step++; wiz.msgs = []; renderWiz(); };
+  $('wz-back').onclick = () => { wiz.step = Math.max(0, wiz.step - 1); wiz.msgs = []; renderWiz(); };
+  $('wz-cancel').onclick = () => endWiz(false);
+  function wizInput(t, ch, n, v) {
+    const S = WIZ[wiz.step], key = `${t}:${ch}:${n}`;
+    if (wiz.used.has(key)) return; // ignore note-offs / the previous control still moving
+    if (S.type === 'pad' && (t === 'n' || (t === 'c' && v > 0))) {
+      unbind(key); map.pads[S.idx] = key; wiz.used.add(key); flash(S.idx);
+      wiz.step++; wiz.msgs = []; renderWiz();
+    } else if (S.type === 'knob' && t === 'c') {
+      wiz.msgs.push([key, v]);
+      const same = wiz.msgs.filter(m => m[0] === key);
+      if (same.length >= 3) {
+        const vals = same.map(m => m[1]);
+        const rep = vals.some((x, j) => j && x === vals[j - 1]);
+        const enc = !rep ? 'abs' : ((vals[0] <= 15 || vals[0] >= 113) ? 'rel2' : 'rel64');
+        unbind(key); map.knobs[S.idx] = { key, enc }; wiz.used.add(key);
+        wiz.step++; wiz.msgs = []; renderWiz();
+      }
+    }
+  }
+
+  // MIDI I/O
+  let midiAccess = null;
+  async function connectMidi() {
+    if (!navigator.requestMIDIAccess) {
+      const ios = /iP(hone|ad|od)/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+      status(ios ? 'iPhone and iPad browsers can’t read MIDI. Open this link in Chrome on your Mac instead.' : 'This browser can’t read MIDI (Safari is one). Use Chrome or Edge.');
+      $('midi-dev').textContent = 'unsupported browser';
+      return false;
+    }
+    try {
+      midiAccess = await navigator.requestMIDIAccess();
+      const bind = () => {
+        const names = [];
+        midiAccess.inputs.forEach(inp => { inp.onmidimessage = onMidi; names.push(inp.name); });
+        $('midi-dev').textContent = names.length ? names.join(', ') : 'no inputs found';
+        $('midi').setAttribute('aria-pressed', names.length > 0);
+        $('midi-led').classList.toggle('on', names.length > 0);
+        if (!names.length) status('No MIDI inputs yet. On a Mac, pair Bluetooth MIDI in Audio MIDI Setup first (Window › Show MIDI Studio › Bluetooth icon).');
+      };
+      midiAccess.onstatechange = bind; bind();
+      return true;
+    } catch (err) {
+      const framed = window !== window.top;
+      status(framed ? 'MIDI is blocked inside the embedded preview. Open the published link directly in Chrome.' : 'MIDI permission was declined.');
+      $('midi-dev').textContent = framed ? 'blocked in preview' : 'permission declined';
+      return false;
+    }
+  }
+  $('midi').onclick = () => connectMidi();
+  let monT = 0;
+  function onMidi({ data }) {
+    const [st, d1, d2 = 0] = data, type = st & 0xf0, ch = st & 0x0f;
+    if (st >= 0xf0) return; // clock / sysex
+    const isOn = type === 0x90 && d2 > 0, isOff = type === 0x80 || (type === 0x90 && d2 === 0), isCC = type === 0xb0;
+    const now = performance.now();
+    if (now - monT > 40) { monT = now; $('monitor').textContent = `${isCC ? 'CC ' + d1 : isOn ? 'Note ' + d1 + ' on' : isOff ? 'Note ' + d1 + ' off' : 'msg 0x' + st.toString(16)} · value ${d2} · ch ${ch + 1}`; }
+    if (!E.ctx) return;
+    if (wiz) { if (isOn) wizInput('n', ch, d1, d2); else if (isCC) wizInput('c', ch, d1, d2); return; }
+    if (learning && learnTarget) {
+      const t = isCC ? 'c' : isOn ? 'n' : null; if (!t) return;
+      const key = `${t}:${ch}:${d1}`;
+      if (learnTarget.type === 'knob' && t !== 'c') { status('Knobs need a CC control. Turn a knob.'); return; }
+      unbind(key);
+      if (learnTarget.type === 'pad') map.pads[learnTarget.idx] = key; else map.knobs[learnTarget.idx] = { key, enc: 'auto' };
+      status(`${bindLabel(key)} → ${(learnTarget.type === 'pad' ? PADS : KNOBS)[learnTarget.idx].name}`);
+      learnTarget = null; clearTargets(); saveMap(); return;
+    }
+    if (isOn || isOff) {
+      const i = findPad('n', ch, d1);
+      if (i >= 0) padPress(i, isOn, d2 / 127);
+    } else if (isCC) {
+      let pi = findPad('c', ch, d1);
+      if (pi >= 0) { padPress(pi, d2 >= 64, 1); return; }
+      let ki = findKnob(ch, d1);
+      if (ki < 0) { // auto-claim: first unmapped CCs fill empty knob slots in order
+        const free = map.knobs.findIndex(b => !b);
+        if (free < 0) return;
+        map.knobs[free] = { key: `c:${ch}:${d1}`, enc: 'auto' }; ki = free; saveMap();
+        status(`CC ${d1} → knob ${free + 1} (${KNOBS[free].name}). Use Map my controller for a clean layout.`);
+      }
+      knobMidi(ki, `c:${ch}:${d1}`, d2);
+    }
+  }
+  $('map-reset').onclick = () => { map = DEFAULT_MAP(); for (const k in encHist) delete encHist[k]; saveMap(); status('Mapping reset'); };
+  $('map-export').onclick = () => {
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(new Blob([JSON.stringify({ app: 'harmonic-field', v: 2, map, settings }, null, 2)], { type: 'application/json' }));
+    a.download = 'harmonic-field-midi-map.json'; a.click();
+  };
+  $('map-import').onclick = () => $('map-file').click();
+  $('map-file').onchange = async e => {
+    try { const j = JSON.parse(await e.target.files[0].text()); if (j.map?.pads && j.map?.knobs) { map = cleanMap(j.map); saveMap(); status('Mapping imported'); } }
+    catch { status('That file is not a Harmonic Field mapping'); }
+  };
+
+  /* ================= Persist sound settings ================= */
+  function save() {
+    store.set('hf-sound-v2', { ctl: E.ctl, beatMode: E.beatMode, lockRoot: E.lockRoot, spread: E.spread, carrierH: E.carrierH,
+      filterType: E.filterType, lowCut: E.lowCut, motionSync: E.motionSync, motionDiv: E.motionDiv, motionFree: E.motionFree, descentMinutes: E.descentMinutes });
+  }
+  const saved = store.get('hf-sound-v2', null);
+  if (saved && typeof saved === 'object') {
+    const num = (v, a, b) => typeof v === 'number' && isFinite(v) ? Math.max(a, Math.min(b, v)) : undefined;
+    if (saved.ctl) for (const k in E.ctl) { const v = num(saved.ctl[k], 0, 1); if (v != null) E.ctl[k] = v; }
+    if (BEAT_MODES.includes(saved.beatMode)) E.beatMode = saved.beatMode;
+    if (FILTER_TYPES.includes(saved.filterType)) E.filterType = saved.filterType;
+    if (typeof saved.lockRoot === 'boolean') E.lockRoot = saved.lockRoot;
+    if (typeof saved.motionSync === 'boolean') E.motionSync = saved.motionSync;
+    for (const [k, a, b] of [['spread', 0, 1], ['carrierH', 2, 8], ['lowCut', 20, 200], ['motionDiv', 4, 32], ['motionFree', 0, 1], ['descentMinutes', 5, 30]]) { const v = num(saved[k], a, b); if (v != null) E[k] = v; }
+    E.volume = E.ctl.level;
+  }
+  setInterval(save, 4000);
+
+  /* ================= Audio health ================= */
+  function showAlert() { $('audio-alert').hidden = !E.ctx || E.ctx.state === 'running' || sleep.slept; }
+  E.onState = st => { showAlert(); if (st !== 'running' && !sleep.slept) status('Audio paused (' + st + '). Tap anywhere or press Resume.'); };
+  const kick = () => { if (sleep.slept) return; if (E.ctx && E.ctx.state !== 'running') E.resume().then(showAlert); };
   ['pointerdown', 'keydown', 'touchend'].forEach(ev => window.addEventListener(ev, kick, { capture: true }));
-  let lock = null;
-  const keepAwake = async () => { try { if ('wakeLock' in navigator && document.visibilityState === 'visible') lock = await navigator.wakeLock.request('screen'); } catch {} };
-  document.addEventListener('visibilitychange', () => { if (!document.hidden) { kick(); keepAwake(); } });
+  document.addEventListener('visibilitychange', () => { if (!document.hidden) kick(); });
+  $('aa-resume').onclick = kick;
+  $('aa-restart').onclick = async () => { await E.restart(); showAlert(); status('Audio engine restarted'); };
+  // Keep-alive element: some mobile browsers suspend Web Audio unless a media element is "playing".
   const keep = new Audio('data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQAAAAA=');
   keep.loop = true; keep.setAttribute('playsinline', '');
 
-  sleep.onDone = () => { $('sleep-ov').hidden = false; if (journey) toggleJourney(); render(); };
-  async function wakeSleep() { await sleep.wake(); $('sleep-ov').hidden = true; applyPreset(current); }
-  $('sleep-ov').onclick = wakeSleep;
-
-  let starting = false;
-  async function begin() {
-    if (E.ctx || starting) return; starting = true;
-    try { await E.start(); } catch (err) { starting = false; $('hf-err').hidden = false; $('hf-err').textContent = 'Audio could not start: ' + err.message; return; }
-    keep.play().catch(() => {});
-    E.setVolume(E.ctl.level);
-    applyPreset(0, 4);
-    $('gate').classList.add('gone'); setTimeout(() => $('gate').remove(), 1500);
-    $('dock').hidden = false; keepAwake(); wake();
+  /* ================= Hide controls (this screen) ================= */
+  let peekT = 0, lastTap = 0;
+  function peek() { $('show').classList.add('peek'); clearTimeout(peekT); peekT = setTimeout(() => $('show').classList.remove('peek'), 3500); }
+  function setHidden(h) {
+    $('panel').classList.toggle('hiding', h);
+    $('show').hidden = !h;
+    document.body.classList.toggle('projection', h);
+    if (h) { peek(); status(''); } else $('show').classList.remove('peek');
+    updateShift();
   }
-  $('begin').onclick = begin;
+  const isHidden = () => $('panel').classList.contains('hiding');
+  // While hidden: any tap shows the "Show controls" button, a quick double tap brings the controls straight back.
+  document.addEventListener('pointerdown', e => {
+    if (!isHidden() || e.target.closest('#show')) return;
+    const now = performance.now();
+    if (now - lastTap < 400) { setHidden(false); lastTap = 0; return; }
+    lastTap = now; peek();
+  });
+  function updateShift() {
+    const p = $('panel'), open = !p.hidden && !p.classList.contains('hiding');
+    const W = window.innerWidth, H = window.innerHeight, minD = Math.min(W, H);
+    const mobile = W <= 720;
+    V.targetShift = open && !mobile ? -(p.offsetWidth + 16) / 2 : 0;
+    V.targetShiftY = open && mobile ? (p.offsetHeight + 8) / 2 : 0;
+    const avail = open ? (mobile ? Math.min(W, H - p.offsetHeight - 8) : Math.min(W - p.offsetWidth - 16, H)) : minD;
+    V.targetZoom = Math.max(1.18, 1.15 * minD / Math.max(120, avail));
+  }
+  window.addEventListener('resize', updateShift);
+  $('hide').onclick = () => setHidden(true);
+  $('show').onclick = () => setHidden(false);
+  $('full').onclick = () => setHidden(true);
 
-  render();
-  function frame() { V.frame(); requestAnimationFrame(frame); }
+  /* ================= Screen window (second display) ================= */
+  if (bc) bc.onmessage = ({ data }) => {
+    if (data?.t === 'hello') { const was = projLive(); projLast = performance.now(); if (!was) { renderScreen(); status('Screen window connected. Controls stay here, visuals play there.'); } }
+    if (data?.t === 'gone') { projLast = 0; renderScreen(); }
+  };
+  function renderScreen() { $('screen').setAttribute('aria-pressed', projLive()); }
+  $('screen').onclick = () => {
+    if (!bc) { status('This browser can’t link a second window. Use Safari or Chrome.'); return; }
+    const url = location.origin + location.pathname + '?view=projector';
+    const w = window.open(url, 'hf-screen', 'popup,width=1280,height=720');
+    status(w ? 'Screen window opened. Move it to your external display, then tap it for full screen.' : 'Pop-up blocked. Allow pop-ups, or open this page with ?view=projector at the end.');
+  };
+  setInterval(renderScreen, 1500);
+
+  /* ================= Sleep timer ================= */
+  const SLEEP_STEPS = [0, 15, 30, 45, 60, 90];
+  $('sleep').onclick = () => {
+    if (!E.ctx) return;
+    const i = SLEEP_STEPS.indexOf(sleep.minutes), next = SLEEP_STEPS[(i + 1) % SLEEP_STEPS.length];
+    sleep.set(next);
+    status(next ? `Sleep in ${next} min. Fades out over the last 90 seconds. Tap again to change.` : 'Sleep timer off');
+    renderSleep();
+  };
+  function renderSleep() {
+    $('sleep').setAttribute('aria-pressed', sleep.minutes > 0);
+    $('sleep-l').textContent = sleep.minutes ? sleep.label() : 'Sleep';
+  }
+  sleep.onDone = () => { $('sleep-ov').hidden = false; renderSleep(); if (drift) toggleDrift(false); };
+  $('sleep-ov').onclick = async () => { await sleep.wake(); $('sleep-ov').hidden = true; showAlert(); status('Welcome back'); };
+  setInterval(renderSleep, 1000);
+
+  /* ================= Keyboard =================
+     Same 4x4 shape as the pads: 1 2 3 4 / Q W E R / A S D F / Z X C + Shift. H hides the controls. */
+  const CODES = ['Digit1', 'Digit2', 'Digit3', 'Digit4', 'KeyQ', 'KeyW', 'KeyE', 'KeyR', 'KeyA', 'KeyS', 'KeyD', 'KeyF', 'KeyZ', 'KeyX', 'KeyC'];
+  window.addEventListener('keydown', e => {
+    if (e.key === 'Escape') { if (wiz) endWiz(false); if (learning) setLearn(false); if (isHidden()) setHidden(false); return; }
+    if (e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT') return;
+    if (e.key === 'Shift') { shiftKey = true; renderPads(); return; }
+    if (e.repeat || e.metaKey || e.ctrlKey || !E.ctx) return;
+    const i = CODES.indexOf(e.code);
+    if (i >= 0) padPress(i, true);
+    else if (e.code === 'KeyH') setHidden(!isHidden());
+  });
+  window.addEventListener('keyup', e => {
+    if (e.key === 'Shift') { shiftKey = false; renderPads(); return; }
+    const i = CODES.indexOf(e.code);
+    if (i >= 0 && held.has(i)) padPress(i, false);
+  });
+  window.addEventListener('blur', () => { shiftKey = false; [...held].forEach(i => padPress(i, false)); });
+
+  /* ================= Start ================= */
+  $('begin').onclick = async () => {
+    try { await E.start(); } catch (err) { status('Audio could not start: ' + err.message); return; }
+    keep.play().catch(() => {});
+    $('gate').classList.add('gone');
+    $('panel').hidden = false; updateShift();
+    setTimeout(() => $('gate').remove(), 1500);
+    showAlert();
+    if (store.get('hf-map-v2', null)) connectMidi();
+  };
+
+  // initial UI state
+  setBeat(E.beatMode); setFilterType(E.filterType); setDiv(E.motionSync ? E.motionDiv : 'free');
+  $('lock').setAttribute('aria-pressed', E.lockRoot);
+  $('spread').value = Math.round(E.spread * 100); $('spread-v').textContent = Math.round(E.spread * 180) + '°';
+  $('lowcut').value = E.lowCut; $('lowcut-v').textContent = E.lowCut + ' Hz';
+  $('mfree').value = Math.round(E.motionFree * 100);
+  $('descent-min').value = E.descentMinutes;
+  renderCarriers(); renderPads(); renderKnobs(); renderBindings(); renderLayers();
+  $('status').textContent = '';
+
+  /* ================= Frame loop ================= */
+  const tdata = new Float32Array(1024);
+  let slow = 0;
+  let fbuf = null;
+  function frame() {
+    V.frame();
+    if (E.ctx && bc && projLive()) {
+      if (!fbuf) fbuf = new Uint8Array(E.analyser.frequencyBinCount);
+      E.analyser.getByteFrequencyData(fbuf);
+      bc.postMessage({ t: 'f', fft: fbuf.slice(0, 512), sr: E.ctx.sampleRate, e: E.eff(), v: E.v, xy: E.xy, pulse: E.pulseValue(),
+        pon: E.pulseOn, pd: E.ctl.pulseDepth, cut: E.ctl.cutoff, ft: E.filterType });
+    }
+    if (E.ctx) {
+      const max = Math.max(...E.partialAmps, 1e-6);
+      E.partialAmps.forEach((a, i) => rungs[i].style.height = Math.max(2, Math.sqrt(a / max) * 100) + '%');
+      const eff = E.eff();
+      METERS.forEach(([k]) => meterFills[k].style.transform = `scaleX(${eff[k].toFixed(3)})`);
+      $('morph-bar').style.transform = `scaleX(${E.morphProgress().toFixed(3)})`;
+      $('rd-root').textContent = E.root.toFixed(2);
+      // output meter (RMS)
+      E.analyser.getFloatTimeDomainData(tdata);
+      let s = 0; for (let i = 0; i < tdata.length; i++) s += tdata[i] * tdata[i];
+      const rms = Math.sqrt(s / tdata.length);
+      $('out-fill').style.transform = `scaleX(${clamp(Math.pow(rms * 4, .6)).toFixed(3)})`;
+      // pulse readouts
+      const hz = E.pulseHz(), band = BAND(hz), pv = E.pulseValue();
+      $('rd-pulse').textContent = E.pulseOn ? `${GREEK[band]} ${hz.toFixed(2)} Hz` : "pulse off";
+      document.documentElement.style.setProperty('--pulse', E.pulseOn ? ((pv + 1) / 2 * E.ctl.pulseDepth).toFixed(3) : 0);
+      if (++slow % 6 === 0) {
+        $('band-rd').textContent = `${band} · ${hz.toFixed(2)} Hz`;
+        $('bs-mark').style.left = (bsPos(hz) * 100) + '%';
+        $('bs-target').style.left = (bsPos(E.targetRate()) * 100) + '%';
+        $('lock-rd').textContent = E.lockRoot ? `${E.root.toFixed(1)} ÷ ${E.lockDivisor()} = ${hz.toFixed(2)} Hz` : `free · ${hz.toFixed(2)} Hz`;
+        $('descent-bar').style.transform = `scaleX(${E.descentProgress().toFixed(3)})`;
+        if (E.descent !== null || $('descent').getAttribute('aria-pressed') === 'true') {
+          if (!E.descent) { $('descent').setAttribute('aria-pressed', 'false'); status('Descent complete'); }
+          $('descent-rd').textContent = E.descent ? `${hz.toFixed(2)} Hz now, gliding to ${E.targetRate().toFixed(2)} Hz` : 'Arrived.';
+        }
+        const lf = E.motionSync ? hz / E.motionDiv : MAP.motionRate(E.motionFree);
+        $('motion-rd').textContent = `${lf.toFixed(2)} Hz · ${(1 / lf).toFixed(1)} s sweep`;
+        $('mfree-v').textContent = MAP.motionRate(E.motionFree).toFixed(2);
+        renderKnob(0); renderKnob(4);
+        if (E.descent) renderPads();
+      }
+      if (rec) { const t = Math.floor((performance.now() - rec.t0) / 1000); $('rec-l').textContent = `${Math.floor(t / 60)}:${String(t % 60).padStart(2, '0')}`; }
+      if (drift && performance.now() > drift.next) drift.step();
+    }
+    requestAnimationFrame(frame);
+  }
   requestAnimationFrame(frame);
-  setInterval(() => { if (E.ctx) render(); }, 1000);
 })();
 
 </script>
